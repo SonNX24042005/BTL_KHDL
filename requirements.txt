@@ -1,0 +1,30 @@
+# ============================================================================
+# Đồ án KHDL (IT4142) — Phân tích & dự báo giá thuê nhà trọ/căn hộ theo khu vực
+# Cài đặt:  pip install -r requirements.txt
+# (Khuyến nghị Python 3.12 + môi trường ảo conda/venv — xem README.md)
+# ============================================================================
+
+# --- Xử lý dữ liệu & học máy (Bước 2–5) ---
+pandas==3.0.2
+numpy==2.4.4
+scikit-learn==1.9.0
+xgboost==3.2.0
+joblib==1.5.3
+
+# --- Trực quan hóa (EDA Bước 3 + biểu đồ báo cáo) ---
+matplotlib==3.10.8
+seaborn==0.13.2
+plotly==6.8.0
+
+# --- App web demo (Bước 6) ---
+streamlit==1.58.0
+
+# --- Chạy / dựng notebook (Bước 3–5) ---
+nbformat==5.10.4
+nbconvert==7.17.1
+nbclient==0.11.0
+ipykernel==7.2.0
+
+# --- Tùy chọn ---
+# kaleido            # xuất PNG cho biểu đồ Plotly trong notebook EDA (nếu thiếu sẽ tự bỏ qua)
+# scrapy==2.11.0     # chỉ cần cho Bước 1 (cào dữ liệu thô)

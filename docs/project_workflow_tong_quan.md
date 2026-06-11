@@ -124,33 +124,68 @@ Thu thập → Xử lý → Trực quan hóa & Hiểu dữ liệu → Phân tíc
 *   **OLS Linear Regression:** Tìm `w*` cực tiểu hóa RSS. Nhược: dễ overfitting, ma trận suy biến.
 *   **Ridge (L2):** Thêm phạt `λ‖w‖²`. Ưu: luôn tồn tại nghiệm, giảm overfitting.
 *   **LASSO (L1):** Thêm phạt `λ‖w‖₁`. Ưu: tạo nghiệm thưa → lựa chọn đặc trưng tự động.
-*   **Random Forest:** Kết hợp nhiều cây quyết định (Bagging + ngẫu nhiên hóa thuộc tính). Mạnh nhất, ít overfitting.
-*   **XGBoost:** Sử dụng thư viện xgboost để huấn luyện mô hình xgboost.
+*   **Random Forest:** Kết hợp nhiều cây quyết định (Bagging + ngẫu nhiên hóa thuộc tính). Ít overfitting, mạnh với dữ liệu phi tuyến.
+*   **XGBoost (Extreme Gradient Boosting):** Thuật toán Gradient Boosting cải tiến — mỗi cây mới học để sửa lỗi (residual) của cây trước theo hướng gradient descent. Hàm mục tiêu gồm **loss function** (giảm sai số) và **regularization** (L1 + L2 kiểm soát độ phức tạp cây, tránh overfitting). Ưu điểm nổi bật: xử lý missing value tự động, hỗ trợ `early_stopping_rounds`, song song hóa tính toán, cho độ chính xác cao hơn Random Forest trên nhiều bài toán thực tế.
 *   **No-Free-Lunch:** Phải thử nhiều thuật toán để so sánh.
 
 **Việc cần làm:**
 *   Chuẩn bị `X` (features) và `y` (price). Chia Train/Validation/Test (70/15/15).
-*   Huấn luyện 4 mô hình: **OLS**, **Ridge**, **LASSO**, **Random Forest**.
-*   Tối ưu siêu tham số: `λ` cho Ridge/LASSO, `n_estimators` cho RF.
-*   Trích xuất Feature Importance từ Random Forest.
-*   Lưu mô hình tốt nhất (`.pkl`).
+*   Huấn luyện 5 mô hình: **OLS**, **Ridge**, **LASSO**, **Random Forest**, **XGBoost**.
+*   Tối ưu siêu tham số:
+    *   Ridge/LASSO: `alpha` — thử grid `[0.01, 0.1, 1, 10, 100]`.
+    *   Random Forest: `n_estimators` ∈ {100, 200, 500}, `max_depth` ∈ {5, 10, 20, None}, `min_samples_split` ∈ {2, 5, 10}.
+    *   **XGBoost** (dùng scikit-learn API `XGBRegressor`):
+        *   `n_estimators` ∈ {100, 300, 500} — số cây boosting.
+        *   `learning_rate` (eta) ∈ {0.01, 0.05, 0.1, 0.3} — bước học; nhỏ hơn → cần nhiều cây hơn.
+        *   `max_depth` ∈ {3, 5, 7} — độ sâu mỗi cây; càng sâu càng dễ overfit.
+        *   `subsample` ∈ {0.6, 0.8, 1.0} — tỉ lệ lấy mẫu hàng mỗi vòng.
+        *   `colsample_bytree` ∈ {0.6, 0.8, 1.0} — tỉ lệ lấy mẫu cột mỗi cây.
+        *   `reg_alpha` (L1) ∈ {0, 0.1, 1} và `reg_lambda` (L2) ∈ {1, 5, 10}.
+        *   Truyền `eval_set=[(X_val, y_val)]` và `early_stopping_rounds=50` vào `fit()` để dừng sớm khi validation loss không cải thiện — tránh overfitting và tiết kiệm thời gian huấn luyện.
+*   **Feature Importance:**
+    *   Random Forest: dùng `model.feature_importances_` (Mean Decrease Impurity).
+    *   XGBoost: dùng `model.feature_importances_` hoặc `xgb.plot_importance(model, importance_type='gain')` (gain = mức giảm loss trung bình khi dùng feature đó).
+    *   Vẽ bar chart top-10 feature quan trọng nhất của cả hai mô hình để so sánh.
+*   Lưu mô hình tốt nhất bằng `joblib.dump(model, 'model_best.pkl')`.
 
 ---
 
 ### BƯỚC 5: ĐÁNH GIÁ & LỰA CHỌN MÔ HÌNH — Slide L12
 
 **Lý thuyết cốt lõi:**
-*   **Hold-out:** Chia Train + Test. **k-fold CV:** Chia k phần, lặp k lần.
-*   **Bootstrap:** Lấy mẫu có trùng lặp (63.2% train).
-*   Tiêu chí hồi quy: **MAE**, **RMSE**, **R² Score**.
-*   Quy trình: Model Selection (tối ưu trên Validation) → Model Assessment (đánh giá trên Test).
+*   **Hold-out:** Chia Train + Validation + Test — nhanh nhưng phụ thuộc cách chia.
+*   **k-fold Cross-Validation:** Chia k phần, lặp k lần, lấy trung bình → đánh giá ổn định hơn, ít phụ thuộc random seed.
+*   **Bootstrap:** Lấy mẫu có trùng lặp (~63.2% mẫu train duy nhất), phần còn lại làm OOB test.
+*   **Tiêu chí hồi quy:**
+    *   **MAE** (Mean Absolute Error) = trung bình |y − ŷ| — dễ diễn giải theo đơn vị giá thuê.
+    *   **RMSE** (Root Mean Squared Error) = √(trung bình (y − ŷ)²) — phạt nặng lỗi lớn hơn MAE.
+    *   **R² Score** = 1 − SS_res/SS_tot ∈ (−∞, 1] — tỉ lệ phương sai được giải thích; R² = 1 là hoàn hảo.
+*   **Quy trình chuẩn:** Model Selection (so sánh + chọn mô hình trên Validation/CV) → Model Assessment (đánh giá lần cuối trên Test, **chỉ chạy 1 lần duy nhất**).
 
 **Việc cần làm:**
-*   Sử dụng **10-fold Cross-Validation** trên tập Train để đánh giá ổn định.
-*   Tối ưu siêu tham số trên tập Validation.
-*   Đánh giá cuối cùng trên tập **Test** (chỉ chạy **1 lần duy nhất**).
-*   Lập bảng so sánh MAE/RMSE/R² cho tất cả mô hình.
-*   Vẽ biểu đồ Actual vs Predicted.
+*   **Cross-Validation trên tập Train:**
+    *   Dùng `cross_val_score(model, X_train, y_train, cv=10, scoring='neg_root_mean_squared_error')` cho từng mô hình.
+    *   Báo cáo mean ± std của RMSE và R² qua 10 fold để đánh giá độ ổn định.
+*   **Tối ưu siêu tham số trên tập Validation:**
+    *   Dùng `GridSearchCV` hoặc `RandomizedSearchCV` với `cv=5` trên tập Train.
+    *   Chọn bộ tham số tốt nhất theo RMSE trên Validation.
+*   **Đánh giá cuối cùng trên tập Test** (chỉ gọi `predict` **1 lần duy nhất** sau khi đã chốt mô hình):
+    *   Tính MAE, RMSE, R² bằng `mean_absolute_error`, `mean_squared_error(squared=False)`, `r2_score` từ `sklearn.metrics`.
+*   **Bảng so sánh tất cả mô hình** (ghi rõ kết quả trên cả CV-Train và Test):
+
+    | Mô hình       | CV RMSE (mean±std) | Test MAE | Test RMSE | Test R² |
+    | :------------ | :----------------- | :------- | :-------- | :------ |
+    | OLS           |                    |          |           |         |
+    | Ridge         |                    |          |           |         |
+    | LASSO         |                    |          |           |         |
+    | Random Forest |                    |          |           |         |
+    | XGBoost       |                    |          |           |         |
+
+*   **Biểu đồ đánh giá:**
+    *   **Actual vs Predicted** (scatter plot): điểm nằm gần đường y = x → mô hình tốt.
+    *   **Residual plot** (residual = y − ŷ vs ŷ): phân bố ngẫu nhiên quanh 0 → không có bias hệ thống.
+    *   **Learning curve** (tùy chọn): vẽ train/val score theo kích thước tập train → chẩn đoán underfitting/overfitting.
+*   Chọn mô hình cuối dựa trên **Test RMSE thấp nhất** và **R² cao nhất**, lưu lại bằng `joblib.dump()`.
 
 ---
 

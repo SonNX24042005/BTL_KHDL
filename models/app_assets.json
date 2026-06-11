@@ -1,0 +1,452 @@
+{
+  "cities": [
+    "Hà Nội",
+    "Hồ Chí Minh",
+    "Đà Nẵng",
+    "Bình Dương",
+    "Hưng Yên",
+    "Hải Phòng",
+    "Quảng Ninh",
+    "Khánh Hòa",
+    "Đồng Nai",
+    "Bà Rịa",
+    "Bắc Ninh"
+  ],
+  "districts_by_city": {
+    "Hà Nội": [
+      "Huyện Gia Lâm",
+      "Huyện Hoài Đức",
+      "Huyện Thanh Trì",
+      "Huyện Đông Anh",
+      "Quận Ba Đình",
+      "Quận Bắc Từ Liêm",
+      "Quận Cầu Giấy",
+      "Quận Hai Bà Trưng",
+      "Quận Hoàn Kiếm",
+      "Quận Hoàng Mai",
+      "Quận Hà Đông",
+      "Quận Long Biên",
+      "Quận Nam Từ Liêm",
+      "Quận Thanh Xuân",
+      "Quận Tây Hồ",
+      "Quận Đống Đa"
+    ],
+    "Hồ Chí Minh": [
+      "Huyện Bình Chánh",
+      "Huyện Hóc Môn",
+      "Huyện Nhà Bè",
+      "Quận 1",
+      "Quận 10",
+      "Quận 11",
+      "Quận 12",
+      "Quận 2",
+      "Quận 3",
+      "Quận 4",
+      "Quận 5",
+      "Quận 6",
+      "Quận 7",
+      "Quận 8",
+      "Quận 9",
+      "Quận Bình Thạnh",
+      "Quận Bình Tân",
+      "Quận Gò Vấp",
+      "Quận Phú Nhuận",
+      "Quận Thủ Đức",
+      "Quận Tân Bình",
+      "Quận Tân Phú",
+      "Thành phố Thủ Đức"
+    ],
+    "Đà Nẵng": [
+      "Quận Cẩm Lệ",
+      "Quận Hải Châu",
+      "Quận Liên Chiểu",
+      "Quận Ngũ Hành Sơn",
+      "Quận Sơn Trà",
+      "Quận Thanh Khê"
+    ],
+    "Bình Dương": [
+      "Thành phố Thuận An"
+    ],
+    "Hưng Yên": [
+      "Huyện Văn Giang"
+    ],
+    "Hải Phòng": [],
+    "Quảng Ninh": [
+      "Thành phố Hạ Long"
+    ],
+    "Khánh Hòa": [],
+    "Đồng Nai": [],
+    "Bà Rịa": [],
+    "Bắc Ninh": []
+  },
+  "region_stats": {
+    "Hà Nội|Huyện Gia Lâm": {
+      "median_price": 4.0,
+      "median_ppm": 0.1333,
+      "n": 7158
+    },
+    "Hà Nội|Huyện Hoài Đức": {
+      "median_price": 4.0,
+      "median_ppm": 0.1333,
+      "n": 7322
+    },
+    "Hà Nội|Huyện Thanh Trì": {
+      "median_price": 4.0,
+      "median_ppm": 0.1333,
+      "n": 7330
+    },
+    "Hà Nội|Huyện Đông Anh": {
+      "median_price": 4.0,
+      "median_ppm": 0.1333,
+      "n": 7327
+    },
+    "Hà Nội|Quận Ba Đình": {
+      "median_price": 4.0,
+      "median_ppm": 0.1333,
+      "n": 7410
+    },
+    "Hà Nội|Quận Bắc Từ Liêm": {
+      "median_price": 4.0,
+      "median_ppm": 0.13,
+      "n": 7699
+    },
+    "Hà Nội|Quận Cầu Giấy": {
+      "median_price": 4.0,
+      "median_ppm": 0.13,
+      "n": 7621
+    },
+    "Hà Nội|Quận Hai Bà Trưng": {
+      "median_price": 4.0,
+      "median_ppm": 0.1333,
+      "n": 7482
+    },
+    "Hà Nội|Quận Hoàn Kiếm": {
+      "median_price": 4.0,
+      "median_ppm": 0.1346,
+      "n": 7226
+    },
+    "Hà Nội|Quận Hoàng Mai": {
+      "median_price": 4.0,
+      "median_ppm": 0.1289,
+      "n": 7750
+    },
+    "Hà Nội|Quận Hà Đông": {
+      "median_price": 4.0,
+      "median_ppm": 0.0667,
+      "n": 702
+    },
+    "Hà Nội|Quận Long Biên": {
+      "median_price": 4.0,
+      "median_ppm": 0.1313,
+      "n": 7537
+    },
+    "Hà Nội|Quận Nam Từ Liêm": {
+      "median_price": 4.0,
+      "median_ppm": 0.13,
+      "n": 7886
+    },
+    "Hà Nội|Quận Thanh Xuân": {
+      "median_price": 4.0,
+      "median_ppm": 0.132,
+      "n": 7835
+    },
+    "Hà Nội|Quận Tây Hồ": {
+      "median_price": 4.0,
+      "median_ppm": 0.1333,
+      "n": 7690
+    },
+    "Hà Nội|Quận Đống Đa": {
+      "median_price": 4.0,
+      "median_ppm": 0.1333,
+      "n": 7655
+    },
+    "Hồ Chí Minh|Huyện Bình Chánh": {
+      "median_price": 4.0,
+      "median_ppm": 0.065,
+      "n": 252
+    },
+    "Hồ Chí Minh|Huyện Hóc Môn": {
+      "median_price": 2.0,
+      "median_ppm": 0.0722,
+      "n": 165
+    },
+    "Hồ Chí Minh|Huyện Nhà Bè": {
+      "median_price": 2.5,
+      "median_ppm": 0.0923,
+      "n": 169
+    },
+    "Hồ Chí Minh|Quận 1": {
+      "median_price": 4.0,
+      "median_ppm": 0.1667,
+      "n": 503
+    },
+    "Hồ Chí Minh|Quận 10": {
+      "median_price": 3.6,
+      "median_ppm": 0.15,
+      "n": 585
+    },
+    "Hồ Chí Minh|Quận 11": {
+      "median_price": 3.0,
+      "median_ppm": 0.14,
+      "n": 472
+    },
+    "Hồ Chí Minh|Quận 12": {
+      "median_price": 2.6,
+      "median_ppm": 0.1,
+      "n": 546
+    },
+    "Hồ Chí Minh|Quận 2": {
+      "median_price": 4.0,
+      "median_ppm": 0.11,
+      "n": 427
+    },
+    "Hồ Chí Minh|Quận 3": {
+      "median_price": 4.0,
+      "median_ppm": 0.1633,
+      "n": 689
+    },
+    "Hồ Chí Minh|Quận 4": {
+      "median_price": 3.5,
+      "median_ppm": 0.15,
+      "n": 484
+    },
+    "Hồ Chí Minh|Quận 5": {
+      "median_price": 3.65,
+      "median_ppm": 0.15,
+      "n": 520
+    },
+    "Hồ Chí Minh|Quận 6": {
+      "median_price": 3.0,
+      "median_ppm": 0.12,
+      "n": 330
+    },
+    "Hồ Chí Minh|Quận 7": {
+      "median_price": 3.8,
+      "median_ppm": 0.1346,
+      "n": 509
+    },
+    "Hồ Chí Minh|Quận 8": {
+      "median_price": 3.0,
+      "median_ppm": 0.12,
+      "n": 506
+    },
+    "Hồ Chí Minh|Quận 9": {
+      "median_price": 3.0,
+      "median_ppm": 0.1,
+      "n": 486
+    },
+    "Hồ Chí Minh|Quận Bình Thạnh": {
+      "median_price": 4.0,
+      "median_ppm": 0.1465,
+      "n": 1020
+    },
+    "Hồ Chí Minh|Quận Bình Tân": {
+      "median_price": 3.0,
+      "median_ppm": 0.1,
+      "n": 489
+    },
+    "Hồ Chí Minh|Quận Gò Vấp": {
+      "median_price": 3.7,
+      "median_ppm": 0.1271,
+      "n": 844
+    },
+    "Hồ Chí Minh|Quận Phú Nhuận": {
+      "median_price": 4.0,
+      "median_ppm": 0.1667,
+      "n": 709
+    },
+    "Hồ Chí Minh|Quận Thủ Đức": {
+      "median_price": 2.65,
+      "median_ppm": 0.1172,
+      "n": 406
+    },
+    "Hồ Chí Minh|Quận Tân Bình": {
+      "median_price": 3.9,
+      "median_ppm": 0.1429,
+      "n": 692
+    },
+    "Hồ Chí Minh|Quận Tân Phú": {
+      "median_price": 3.5,
+      "median_ppm": 0.13,
+      "n": 485
+    },
+    "Hồ Chí Minh|Thành phố Thủ Đức": {
+      "median_price": 4.0,
+      "median_ppm": 0.0614,
+      "n": 186
+    },
+    "Đà Nẵng|Quận Cẩm Lệ": {
+      "median_price": 2.3,
+      "median_ppm": 0.08,
+      "n": 183
+    },
+    "Đà Nẵng|Quận Hải Châu": {
+      "median_price": 3.0,
+      "median_ppm": 0.0833,
+      "n": 257
+    },
+    "Đà Nẵng|Quận Liên Chiểu": {
+      "median_price": 2.0,
+      "median_ppm": 0.06,
+      "n": 164
+    },
+    "Đà Nẵng|Quận Ngũ Hành Sơn": {
+      "median_price": 4.0,
+      "median_ppm": 0.0715,
+      "n": 316
+    },
+    "Đà Nẵng|Quận Sơn Trà": {
+      "median_price": 4.0,
+      "median_ppm": 0.0615,
+      "n": 268
+    },
+    "Đà Nẵng|Quận Thanh Khê": {
+      "median_price": 2.0,
+      "median_ppm": 0.1,
+      "n": 152
+    },
+    "Bình Dương|Thành phố Thuận An": {
+      "median_price": 4.0,
+      "median_ppm": 0.0571,
+      "n": 103
+    },
+    "Hưng Yên|Huyện Văn Giang": {
+      "median_price": 4.0,
+      "median_ppm": 0.0451,
+      "n": 144
+    },
+    "Quảng Ninh|Thành phố Hạ Long": {
+      "median_price": 4.0,
+      "median_ppm": 0.0578,
+      "n": 129
+    }
+  },
+  "city_stats": {
+    "Hà Nội": {
+      "median_price": 4.0,
+      "median_ppm": 0.13,
+      "n": 117120
+    },
+    "Hồ Chí Minh": {
+      "median_price": 3.6,
+      "median_ppm": 0.1278,
+      "n": 11697
+    },
+    "Đà Nẵng": {
+      "median_price": 4.0,
+      "median_ppm": 0.0727,
+      "n": 1374
+    },
+    "Bình Dương": {
+      "median_price": 4.0,
+      "median_ppm": 0.0502,
+      "n": 334
+    },
+    "Hưng Yên": {
+      "median_price": 4.0,
+      "median_ppm": 0.0482,
+      "n": 245
+    },
+    "Hải Phòng": {
+      "median_price": 4.0,
+      "median_ppm": 0.0533,
+      "n": 229
+    },
+    "Quảng Ninh": {
+      "median_price": 4.0,
+      "median_ppm": 0.0571,
+      "n": 201
+    },
+    "Khánh Hòa": {
+      "median_price": 4.0,
+      "median_ppm": 0.0707,
+      "n": 184
+    },
+    "Đồng Nai": {
+      "median_price": 4.0,
+      "median_ppm": 0.0544,
+      "n": 176
+    },
+    "Bà Rịa": {
+      "median_price": 4.0,
+      "median_ppm": 0.0742,
+      "n": 114
+    },
+    "Bắc Ninh": {
+      "median_price": 4.0,
+      "median_ppm": 0.0503,
+      "n": 102
+    }
+  },
+  "amenities": [
+    {
+      "col": "feature_Đầy đủ nội thất",
+      "label": "Đầy đủ nội thất"
+    },
+    {
+      "col": "feature_Có gác",
+      "label": "Có gác"
+    },
+    {
+      "col": "feature_Có kệ bếp",
+      "label": "Có kệ bếp"
+    },
+    {
+      "col": "feature_Có máy lạnh",
+      "label": "Có máy lạnh"
+    },
+    {
+      "col": "feature_Có máy giặt",
+      "label": "Có máy giặt"
+    },
+    {
+      "col": "feature_Có tủ lạnh",
+      "label": "Có tủ lạnh"
+    },
+    {
+      "col": "feature_Có thang máy",
+      "label": "Có thang máy"
+    },
+    {
+      "col": "feature_Không chung chủ",
+      "label": "Không chung chủ"
+    },
+    {
+      "col": "feature_Giờ giấc tự do",
+      "label": "Giờ giấc tự do"
+    },
+    {
+      "col": "feature_Có bảo vệ 24/24",
+      "label": "Có bảo vệ 24/24"
+    },
+    {
+      "col": "feature_Có hầm để xe",
+      "label": "Có hầm để xe"
+    },
+    {
+      "col": "feature_Có nước nóng",
+      "label": "Có nước nóng"
+    }
+  ],
+  "ranges": {
+    "area": [
+      8.0,
+      180.0
+    ],
+    "price": [
+      0.5,
+      17.0,
+      4.0
+    ],
+    "bedrooms": [
+      0,
+      6
+    ],
+    "bathrooms": [
+      0,
+      5
+    ]
+  },
+  "overall_median_price": 4.0,
+  "unknown_label": "(không rõ)"
+}

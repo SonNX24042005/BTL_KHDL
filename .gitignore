@@ -1,0 +1,17 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Mô hình lớn (Bước 4) ---
+# Random Forest (500 cây × depth 20) ≈ 95 MB sau nén → vượt giới hạn 100 MB của GitHub.
+# Tái tạo được từ models/metadata.json (best_params) bằng 1 lần fit. Các model khác đều nhỏ, vẫn commit.
+models/model_random_forest.pkl
+cautrucbaocao.md
+docs/project_workflow_chi_tiet.md
+docs/project_workflow.md
+docs/bao_cao/
+docs/Bao_Cao/

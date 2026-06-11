@@ -1,0 +1,238 @@
+{
+  "task": "regression - du bao gia thue (trieu VND/thang)",
+  "target": "price",
+  "best_model": "XGBoost",
+  "most_accurate_val": "Random Forest",
+  "feature_columns": {
+    "num": [
+      "area",
+      "bedrooms",
+      "bathrooms",
+      "n_features"
+    ],
+    "cat": [
+      "city",
+      "district"
+    ],
+    "bin": [
+      "feature_Đầy đủ nội thất",
+      "feature_Có gác",
+      "feature_Có kệ bếp",
+      "feature_Có máy lạnh",
+      "feature_Có máy giặt",
+      "feature_Có tủ lạnh",
+      "feature_Có thang máy",
+      "feature_Không chung chủ",
+      "feature_Giờ giấc tự do",
+      "feature_Có bảo vệ 24/24",
+      "feature_Có hầm để xe",
+      "feature_Có nước nóng"
+    ]
+  },
+  "split": {
+    "train": 93191,
+    "val": 19906,
+    "test": 19959,
+    "scheme": "70/15/15"
+  },
+  "validation_metrics": {
+    "OLS": {
+      "MAE": 1.9539,
+      "RMSE": 2.5634,
+      "R2": 0.2004
+    },
+    "Ridge": {
+      "MAE": 1.9537,
+      "RMSE": 2.5633,
+      "R2": 0.2004
+    },
+    "LASSO": {
+      "MAE": 1.9557,
+      "RMSE": 2.5668,
+      "R2": 0.1983
+    },
+    "Random Forest": {
+      "MAE": 1.0409,
+      "RMSE": 1.747,
+      "R2": 0.6286
+    },
+    "XGBoost": {
+      "MAE": 1.1108,
+      "RMSE": 1.755,
+      "R2": 0.6252
+    }
+  },
+  "best_params": {
+    "Ridge": {
+      "ridge__alpha": 1.0
+    },
+    "LASSO": {
+      "lasso__alpha": 0.001
+    },
+    "Random Forest": {
+      "rf__n_estimators": 500,
+      "rf__min_samples_split": 10,
+      "rf__max_depth": 20
+    },
+    "XGBoost": {
+      "xgb__subsample": 0.8,
+      "xgb__reg_lambda": 10,
+      "xgb__reg_alpha": 0,
+      "xgb__n_estimators": 500,
+      "xgb__max_depth": 7,
+      "xgb__learning_rate": 0.05,
+      "xgb__colsample_bytree": 0.6,
+      "early_stop_best_iteration": 948
+    }
+  },
+  "versions": {
+    "scikit_learn": "1.9.0",
+    "xgboost": "3.2.0"
+  },
+  "excluded_features": [
+    "source",
+    "price_per_m2",
+    "log_price",
+    "posted_date",
+    "description"
+  ],
+  "ablation": {
+    "fe_pca_rmse": {
+      "V0 Thô (không FE) | OLS": 2.6521,
+      "V0 Thô (không FE) | Ridge": 2.6521,
+      "V0 Thô (không FE) | XGBoost": 1.8366,
+      "V1 FE, không chuẩn hóa | OLS": 2.5634,
+      "V1 FE, không chuẩn hóa | Ridge": 2.5633,
+      "V1 FE, không chuẩn hóa | XGBoost": 1.755,
+      "V2 FE + chuẩn hóa | OLS": 2.5634,
+      "V2 FE + chuẩn hóa | Ridge": 2.5633,
+      "V2 FE + chuẩn hóa | XGBoost": 1.755,
+      "V3 FE + PCA(95%) | OLS": 2.601,
+      "V3 FE + PCA(95%) | Ridge": 2.601,
+      "V3 FE + PCA(95%) | XGBoost": 1.814
+    },
+    "log_target": {
+      "OLS | price (gốc)": {
+        "MAE": 1.9539,
+        "RMSE": 2.5634,
+        "R²": 0.2004,
+        "RMSE giá cao": 5.8828,
+        "Bias giá cao": -5.5851
+      },
+      "OLS | log1p(price)": {
+        "MAE": 1.8703,
+        "RMSE": 2.6088,
+        "R²": 0.1718,
+        "RMSE giá cao": 6.5197,
+        "Bias giá cao": -6.2438
+      },
+      "Ridge | price (gốc)": {
+        "MAE": 1.9537,
+        "RMSE": 2.5633,
+        "R²": 0.2004,
+        "RMSE giá cao": 5.8836,
+        "Bias giá cao": -5.5858
+      },
+      "Ridge | log1p(price)": {
+        "MAE": 1.8703,
+        "RMSE": 2.6088,
+        "R²": 0.1718,
+        "RMSE giá cao": 6.5204,
+        "Bias giá cao": -6.2445
+      },
+      "XGBoost | price (gốc)": {
+        "MAE": 1.1108,
+        "RMSE": 1.755,
+        "R²": 0.6252,
+        "RMSE giá cao": 3.7096,
+        "Bias giá cao": -2.5659
+      },
+      "XGBoost | log1p(price)": {
+        "MAE": 1.0669,
+        "RMSE": 1.7729,
+        "R²": 0.6175,
+        "RMSE giá cao": 4.1688,
+        "Bias giá cao": -3.0272
+      }
+    },
+    "outliers_xgb": {
+      "Train CÓ outlier": {
+        "MAE": 2.4911,
+        "RMSE": 7.7287,
+        "R2": -6.4373
+      },
+      "Train ĐÃ lọc outlier": {
+        "MAE": 1.1284,
+        "RMSE": 1.7831,
+        "R2": 0.6041
+      }
+    }
+  },
+  "note": "source CO Y bi loai. Buoc 5: danh gia 10-fold CV + Test (1 lan). model_best.pkl = XGBoost refit tren Train+Val. FE dung script/model/features.py. Buoc 4 muc 11: ablation FE/PCA, log-target, outlier (xem meta['ablation']).",
+  "cv_metrics": {
+    "OLS": {
+      "CV_RMSE_mean": 2.5561,
+      "CV_RMSE_std": 0.0225,
+      "CV_MAE_mean": 1.946,
+      "CV_R2_mean": 0.2032,
+      "CV_R2_std": 0.0052
+    },
+    "Ridge": {
+      "CV_RMSE_mean": 2.5561,
+      "CV_RMSE_std": 0.0226,
+      "CV_MAE_mean": 1.9459,
+      "CV_R2_mean": 0.2032,
+      "CV_R2_std": 0.0052
+    },
+    "LASSO": {
+      "CV_RMSE_mean": 2.5599,
+      "CV_RMSE_std": 0.0233,
+      "CV_MAE_mean": 1.948,
+      "CV_R2_mean": 0.2008,
+      "CV_R2_std": 0.0054
+    },
+    "Random Forest": {
+      "CV_RMSE_mean": 1.7298,
+      "CV_RMSE_std": 0.0182,
+      "CV_MAE_mean": 1.0286,
+      "CV_R2_mean": 0.635,
+      "CV_R2_std": 0.0075
+    },
+    "XGBoost": {
+      "CV_RMSE_mean": 1.7403,
+      "CV_RMSE_std": 0.0183,
+      "CV_MAE_mean": 1.1006,
+      "CV_R2_mean": 0.6306,
+      "CV_R2_std": 0.0069
+    }
+  },
+  "test_metrics": {
+    "OLS": {
+      "Test_MAE": 1.9508,
+      "Test_RMSE": 2.5578,
+      "Test_R2": 0.2098
+    },
+    "Ridge": {
+      "Test_MAE": 1.9509,
+      "Test_RMSE": 2.5578,
+      "Test_R2": 0.2097
+    },
+    "LASSO": {
+      "Test_MAE": 1.9551,
+      "Test_RMSE": 2.5636,
+      "Test_R2": 0.2062
+    },
+    "Random Forest": {
+      "Test_MAE": 1.0317,
+      "Test_RMSE": 1.7475,
+      "Test_R2": 0.6312
+    },
+    "XGBoost": {
+      "Test_MAE": 1.0978,
+      "Test_RMSE": 1.7462,
+      "Test_R2": 0.6317
+    }
+  },
+  "most_accurate_test": "XGBoost",
+  "final_model_trained_on": "Train+Val (85%)"
+}
