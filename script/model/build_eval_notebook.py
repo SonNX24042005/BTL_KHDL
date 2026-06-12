@@ -1,10 +1,13 @@
 """
-Sinh notebook Bước 5 — ĐÁNH GIÁ & LỰA CHỌN MÔ HÌNH (Slide L12).
+Sinh notebook Bước 5 — ĐÁNH GIÁ & LỰA CHỌN MÔ HÌNH (Slide L12) — phiên bản v2.
 
-Cùng pattern với Bước 3/4: dựng bằng nbformat rồi thực thi bằng nbconvert để nhúng kết quả.
-Notebook nạp lại **siêu tham số đã chốt ở Bước 4** từ `models/metadata.json` (single source of
-truth) → tái dựng 5 mô hình → đánh giá nghiêm ngặt:
+Kế thừa từ v1 (v1/script/model/build_eval_notebook.py), ĐIỀU CHỈNH cho luồng v2:
+  - Nạp siêu tham số đã chốt ở Bước 4 từ `v2/models/metadata.json` (single source of truth).
+  - FE chung: `v2/script/model/features.py`.
+  - Đầu vào dữ liệu: `v2/data/processed/rental_data_clean.csv`.
+  - Đầu ra: `v2/notebooks/05_evaluation.ipynb`; PNG → `v2/docs/eval/`; cập nhật `v2/models/`.
 
+Notebook tái dựng 5 mô hình → đánh giá nghiêm ngặt:
   1. **10-fold Cross-Validation** trên Train+Val (mean ± std của RMSE/MAE/R²) — đo độ ổn định.
   2. **Model Assessment**: huấn luyện lại trên Train+Val rồi đánh giá **1 LẦN DUY NHẤT trên Test**.
   3. **Bảng so sánh** CV ↔ Test cho cả 5 mô hình.
@@ -13,14 +16,14 @@ truth) → tái dựng 5 mô hình → đánh giá nghiêm ngặt:
 
 Tập Test (giữ nguyên từ Bước 4) chỉ được "mở niêm phong" và dùng đúng 1 lần tại đây.
 
-Chạy:  python script/model/build_eval_notebook.py
+Chạy:  python v2/script/model/build_eval_notebook.py
 """
 from pathlib import Path
 import nbformat as nbf
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
-ROOT = Path(__file__).resolve().parents[2]
-NB_PATH = ROOT / "notebooks" / "05_evaluation.ipynb"
+ROOT = Path(__file__).resolve().parents[3]          # .../btl_khdl (script ở v2/script/model/)
+NB_PATH = ROOT / "v2" / "notebooks" / "05_evaluation.ipynb"
 
 md = new_markdown_cell
 code = new_code_cell
@@ -31,8 +34,8 @@ cells.append(md(r"""# Bước 5 — Đánh giá & Lựa chọn Mô hình (Slide 
 
 **Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4142)*
 
-Tiếp nối **Bước 4** (đã huấn luyện + tinh chỉnh 5 mô hình), Bước 5 **đánh giá nghiêm ngặt** để
-chốt mô hình cuối, theo đúng quy trình chuẩn (Slide L12):
+Tiếp nối **Bước 4** (đã huấn luyện + tinh chỉnh 5 mô hình — notebook `04_modeling.ipynb`), Bước 5
+**đánh giá nghiêm ngặt** để chốt mô hình cuối, theo đúng quy trình chuẩn (Slide L12):
 
 > **Model Selection** (so sánh trên CV/Validation) → **Model Assessment** (đánh giá **1 lần duy
 > nhất** trên Test).
@@ -44,8 +47,8 @@ chốt mô hình cuối, theo đúng quy trình chuẩn (Slide L12):
 | **Bảng so sánh** | CV RMSE (mean±std) · CV R² · Test MAE · Test RMSE · Test R² cho cả 5 mô hình |
 | **Chẩn đoán** | Actual vs Predicted · Residual plot · Learning curve |
 
-> **Nhất quán với Bước 4:** nạp **siêu tham số đã chốt** từ `models/metadata.json`, feature
-> engineering dùng chung `script/model/features.py` (`source` **đã loại** khỏi đặc trưng).
+> **Nhất quán với Bước 4:** nạp **siêu tham số đã chốt** từ `v2/models/metadata.json`, feature
+> engineering dùng chung `v2/script/model/features.py` (`source` **đã loại** khỏi đặc trưng).
 """.strip()))
 
 # ---- 0. Setup --------------------------------------------------------------
@@ -81,15 +84,16 @@ matplotlib.rcParams.update({
     "axes.labelsize": 11, "axes.edgecolor": "#555", "grid.alpha": 0.30,
 })
 
+# ---------- Đường dẫn (v2-local) ----------
 ROOT = Path.cwd()
 if ROOT.name == "notebooks":
-    ROOT = ROOT.parent
-sys.path.insert(0, str(ROOT / "script" / "model"))
+    ROOT = ROOT.parents[1]                           # → .../btl_khdl
+sys.path.insert(0, str(ROOT / "v2" / "script" / "model"))
 import features as F
 
-DATA   = ROOT / "data" / "processed"
-FIG    = ROOT / "docs" / "bao_cao" / "eval"
-MODELS = ROOT / "models"
+DATA   = ROOT / "v2" / "data" / "processed"
+FIG    = ROOT / "v2" / "docs" / "eval"
+MODELS = ROOT / "v2" / "models"
 FIG.mkdir(parents=True, exist_ok=True)
 
 def save_mpl(fig, name):
@@ -98,7 +102,7 @@ def save_mpl(fig, name):
 meta = json.loads((MODELS / "metadata.json").read_text(encoding="utf-8"))
 BP = meta["best_params"]
 print("scikit-learn", sklearn.__version__, "| xgboost", xgboost.__version__)
-print("Siêu tham số nạp từ Bước 4 (models/metadata.json):")
+print("Siêu tham số nạp từ Bước 4 (v2/models/metadata.json):")
 print("  Ridge α =", BP["Ridge"]["ridge__alpha"],
       "| LASSO α =", BP["LASSO"]["lasso__alpha"])
 print("  RF  =", {k.replace('rf__',''): v for k, v in BP["Random Forest"].items()})
@@ -131,14 +135,18 @@ cells.append(md(r"""## 2. Tái dựng 5 mô hình đã tinh chỉnh (từ siêu 
 Tái dựng pipeline **sạch, có thể clone** (cho `cross_validate`). Với **XGBoost** dùng
 `n_estimators = early_stop_best_iteration` (số cây early stopping đã tìm ở Bước 4) làm số cây
 **cố định** — không cần `eval_set`, nên CV và huấn luyện cuối đều chạy được nhất quán.
+
+Giữ nguyên 2 quyết định FE của Bước 4: **mask MNAR** cờ tiện ích chế tác (NaN — mô hình cây xử lý
+native, tuyến tính dùng imputer) và **ràng buộc đơn điệu** 12 cờ tiện ích cho XGBoost.
 """))
 cells.append(code(r"""
-def build_prep():
-    return F.build_preprocessor(COL_GROUPS, min_frequency=100)
+def build_prep(impute_bin=False):
+    "impute_bin=True cho mô hình tuyến tính (OLS/Ridge/LASSO không nhận NaN cờ tiện ích)."
+    return F.build_preprocessor(COL_GROUPS, min_frequency=100, impute_bin=impute_bin)
 
 def make_linear(step_name, estimator):
     "Pipeline tuyến tính học trên price gốc (quyết định từ thực nghiệm 11.2 — Bước 4)."
-    return Pipeline([("prep", build_prep()), (step_name, estimator)])
+    return Pipeline([("prep", build_prep(impute_bin=True)), (step_name, estimator)])
 
 rf_params  = {k.replace("rf__", ""): v for k, v in BP["Random Forest"].items()}
 xgb_n      = int(BP["XGBoost"]["early_stop_best_iteration"])
@@ -156,10 +164,11 @@ def build_models():
             ("rf", RandomForestRegressor(**rf_params, random_state=RANDOM_STATE, n_jobs=-1))]),
         "XGBoost": Pipeline([("prep", build_prep()),
             ("xgb", XGBRegressor(**xgb_params, n_estimators=xgb_n, tree_method="hist",
+                                 monotone_constraints=F.monotone_constraints(COL_GROUPS),
                                  random_state=RANDOM_STATE, n_jobs=-1))]),
     }
 
-DEPLOY_NAME = meta["best_model"]   # XGBoost — mô hình triển khai đã chốt ở Bước 4 (tie-break tiết kiệm)
+DEPLOY_NAME = meta["best_model"]   # XGBoost — chốt ở Bước 4 (tiêu chí hành vi: ràng buộc đơn điệu)
 print("Đã tái dựng:", list(build_models().keys()))
 print(f"XGBoost dùng n_estimators cố định = {xgb_n} (số cây early stopping ở Bước 4).")
 print(f"Mô hình triển khai (từ Bước 4): {DEPLOY_NAME}")
@@ -178,7 +187,7 @@ cells.append(md(r"""## 3. Các phương pháp đánh giá (Slide L12)
 **Chỉ số hồi quy:** **MAE** = trung bình \|y−ŷ\| (dễ diễn giải theo triệu VNĐ); **RMSE** =
 √(trung bình (y−ŷ)²) (phạt nặng lỗi lớn); **R²** ∈ (−∞, 1] (tỷ lệ phương sai giải thích).
 
-Dữ liệu của ta đủ lớn (133k) nên dùng **k-fold (k=10)** để chọn/so sánh, rồi Hold-out **Test**
+Dữ liệu của ta đủ lớn (~133k) nên dùng **k-fold (k=10)** để chọn/so sánh, rồi Hold-out **Test**
 để đánh giá cuối — đúng tinh thần *Model Selection → Model Assessment*.
 """))
 
@@ -274,7 +283,7 @@ display(tbl.style.format({"Test MAE": "{:.4f}", "Test RMSE": "{:.4f}", "Test R²
         .set_caption("So sánh mô hình: Cross-Validation (Train+Val) ↔ Test (đánh giá 1 lần)"))
 
 print(f"📈 Test RMSE thấp nhất: {MOST_ACCURATE_TEST}")
-print(f"🏆 Mô hình TRIỂN KHAI (chốt ở Bước 4, tie-break tiết kiệm): {DEPLOY_NAME}")
+print(f"🏆 Mô hình TRIỂN KHAI (chốt ở Bước 4 theo tiêu chí hành vi — ràng buộc đơn điệu): {DEPLOY_NAME}")
 print(f"   Test: RMSE={test_summary[DEPLOY_NAME]['Test_RMSE']:.4f}, "
       f"R²={test_summary[DEPLOY_NAME]['Test_R2']:.4f}, MAE={test_summary[DEPLOY_NAME]['Test_MAE']:.4f}")
 gap = test_summary[MOST_ACCURATE_TEST]['Test_RMSE']
@@ -347,7 +356,7 @@ print("→ Train RMSE và CV RMSE hội tụ gần nhau khi tăng dữ liệu �
 cells.append(md(r"""## 8. Lưu mô hình cuối & cập nhật metadata
 
 Mô hình triển khai (**XGBoost**) được huấn luyện lại trên **toàn bộ Train+Val** ⇒ lưu đè
-`models/model_best.pkl` (bản dùng nhiều dữ liệu nhất). Cập nhật `metadata.json` thêm
+`v2/models/model_best.pkl` (bản dùng nhiều dữ liệu nhất). Cập nhật `v2/models/metadata.json` thêm
 `cv_metrics` và `test_metrics` để Bước 6 (app demo) và báo cáo dùng lại.
 """))
 cells.append(code(r"""
@@ -357,8 +366,10 @@ meta["cv_metrics"] = {k: {kk: round(float(vv), 4) for kk, vv in v.items()} for k
 meta["test_metrics"] = {k: {kk: round(float(vv), 4) for kk, vv in v.items()} for k, v in test_summary.items()}
 meta["most_accurate_test"] = MOST_ACCURATE_TEST
 meta["final_model_trained_on"] = "Train+Val (85%)"
-meta["note"] = ("source CO Y bi loai. Buoc 5: danh gia 10-fold CV + Test (1 lan). "
-                "model_best.pkl = XGBoost refit tren Train+Val. FE dung script/model/features.py. "
+meta["note"] = ("source CO Y bi loai; n_features bi loai; 7/12 co tien ich che tac duoc mask NaN "
+                "theo nguon (MNAR, xem features.OBSERVED_FLAGS; kiem toan o Buoc 2 - notebook 02 v2); "
+                "XGBoost co monotone_constraints tren 12 co. Buoc 5: danh gia 10-fold CV + Test (1 lan). "
+                "model_best.pkl = XGBoost refit tren Train+Val. FE dung v2/script/model/features.py. "
                 "Buoc 4 muc 11: ablation FE/PCA, log-target, outlier (xem meta['ablation']).")
 (MODELS / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, default=str),
                                       encoding="utf-8")
@@ -379,16 +390,18 @@ cells.append(md(r"""## 9. Kết luận Bước 5 & bàn giao Bước 6
 
 **Kết luận:**
 - **CV ≈ Test** trên các mô hình cây ⇒ **không overfit**, hiệu năng khái quát hóa ổn định.
-- **Random Forest / XGBoost** vượt trội mô hình tuyến tính (Test R² ≈ 0.63 so với ≈ 0.20); hai mô
-  hình cây **gần như ngang nhau** trên Test → chốt **XGBoost để triển khai** (tie-break tiết kiệm
-  từ Bước 4: nhỏ hơn ~40×, có early stopping) — *quyết định này không bị tập Test bác bỏ*.
-- Sai số thực tế của mô hình triển khai ở mức **MAE ~1 triệu/tháng** — đủ tốt cho công cụ tham
+- **Random Forest / XGBoost** vượt trội mô hình tuyến tính. Lưu ý khi đọc bảng: chỉ **XGBoost
+  được áp ràng buộc đơn điệu** (Quyết định D — bảo đảm "tick tiện ích không giảm giá" cho app);
+  các mô hình còn lại chạy **không ràng buộc**, nên RMSE thô của RF có thể thấp hơn — phần "thắng"
+  đó đến từ tự do khai thác tương quan hành-vi-đăng-tin phi nhân quả. Chốt **XGBoost (có ràng
+  buộc) để triển khai**: đúng hành vi cho app, lại gọn (≈2 MB) và có early stopping.
+- Sai số thực tế của mô hình triển khai ở mức **MAE ~1.2 triệu/tháng** — đủ tốt cho công cụ tham
   khảo giá; phần dư phân bố quanh 0, không thiên lệch hệ thống.
 
 **Bàn giao Bước 6 (Hệ thống thử nghiệm & Báo cáo):**
-- `models/model_best.pkl` (XGBoost, refit Train+Val) + `models/metadata.json` (đủ cột, params,
+- `v2/models/model_best.pkl` (XGBoost, refit Train+Val) + `v2/models/metadata.json` (đủ cột, params,
   cv/test metrics) — sẵn sàng cho **app Streamlit** nạp & dự đoán.
-- Biểu đồ Bước 4–5 tại `docs/bao_cao/model/` và `docs/bao_cao/eval/` cho **báo cáo PDF**.
+- Biểu đồ Bước 4–5 tại `v2/docs/model/` và `v2/docs/eval/` cho **báo cáo PDF**.
 - App nhập: `area, bedrooms, bathrooms, city, district` + 12 cờ tiện ích (FE dùng chung
   `features.py`); **không cần nhập `source`** vì đã loại khỏi mô hình.
 """.strip()))
@@ -398,5 +411,5 @@ nb = new_notebook(cells=cells)
 nb.metadata["kernelspec"] = {"name": "btl_khdl", "display_name": "Python (btl_khdl)", "language": "python"}
 nb.metadata["language_info"] = {"name": "python"}
 NB_PATH.parent.mkdir(parents=True, exist_ok=True)
-nbf.write(nb, NB_PATH)
-print("Đã ghi notebook:", NB_PATH)
+nbf.write(nb, str(NB_PATH))
+print("Đã ghi notebook (chưa thực thi):", NB_PATH)

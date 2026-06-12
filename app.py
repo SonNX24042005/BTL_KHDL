@@ -23,9 +23,11 @@ sys.path.insert(0, str(ROOT / "script" / "model"))
 import features as F  # feature engineering DÙNG CHUNG với lúc train
 
 MODELS = ROOT / "models"
-EDA_FIG = ROOT / "docs" / "bao_cao" / "eda"
-MODEL_FIG = ROOT / "docs" / "bao_cao" / "model"
-EVAL_FIG = ROOT / "docs" / "bao_cao" / "eval"
+DATA = ROOT / "data" / "processed" / "rental_data_clean.csv"
+EDA_FIG = ROOT / "docs" / "eda"
+MODEL_FIG = ROOT / "docs" / "model"
+EVAL_FIG = ROOT / "docs" / "eval"
+MIN_COUNT = 100          # khớp min_frequency của OneHotEncoder → vùng mô hình "phân biệt" được
 
 st.set_page_config(page_title="Dự báo giá thuê nhà trọ", page_icon="🏠", layout="wide")
 
@@ -41,11 +43,65 @@ def load_json(name):
     return json.loads((MODELS / name).read_text(encoding="utf-8"))
 
 
+@st.cache_data
+def build_assets(bin_cols):
+    """Dựng dữ liệu phụ trợ cho app TRỰC TIẾP từ CSV đã làm sạch (cache 1 lần).
+
+    Thay cho `models/app_assets.json` đã bỏ — giữ app tự chứa, luôn khớp dữ liệu/mô hình
+    hiện tại. Logic giống hệt builder cũ: chỉ giữ TỈNH/THÀNH thật & quận/huyện đủ mẫu
+    (≥ MIN_COUNT), trung vị giá + đơn giá/m² theo (thành phố, quận) và theo thành phố.
+    """
+    df = F.add_engineered(pd.read_csv(DATA, low_memory=False))
+    df["price_per_m2"] = df["price"] / df["area"]
+
+    prov_set = set(F.PROVINCES)
+    city_counts = df["city"].value_counts()
+    cities = [c for c in city_counts.index if c in prov_set and city_counts[c] >= MIN_COUNT]
+
+    districts_by_city, region_stats = {}, {}
+    for city in cities:
+        sub = df[df["city"] == city]
+        dc = sub["district"].value_counts()
+        dists = sorted(d for d in dc.index if dc[d] >= MIN_COUNT and d != F.UNKNOWN)
+        districts_by_city[city] = dists
+        for d in dists:
+            s = sub[sub["district"] == d]
+            region_stats[f"{city}|{d}"] = {
+                "median_price": round(float(s["price"].median()), 2),
+                "median_ppm": round(float(s["price_per_m2"].median()), 4),
+                "n": int(len(s)),
+            }
+
+    city_stats = {
+        c: {"median_price": round(float(df.loc[df.city == c, "price"].median()), 2),
+            "median_ppm": round(float((df.loc[df.city == c, "price"] /
+                                       df.loc[df.city == c, "area"]).median()), 4),
+            "n": int((df.city == c).sum())}
+        for c in cities
+    }
+
+    return {
+        "cities": cities,
+        "districts_by_city": districts_by_city,
+        "region_stats": region_stats,
+        "city_stats": city_stats,
+        "amenities": [{"col": c, "label": c.replace("feature_", "")} for c in bin_cols],
+        "ranges": {
+            "area": [float(df.area.min()), float(df.area.max())],
+            "price": [float(df.price.min()), float(df.price.max()), float(df.price.median())],
+            "bedrooms": [int(df.bedrooms.min()), int(df.bedrooms.max())],
+            "bathrooms": [int(df.bathrooms.min()), int(df.bathrooms.max())],
+        },
+        "overall_median_price": round(float(df.price.median()), 2),
+        "unknown_label": F.UNKNOWN,
+    }
+
+
 model = load_model()
 meta = load_json("metadata.json")
-assets = load_json("app_assets.json")
 
 BIN_COLS = meta["feature_columns"]["bin"]
+assets = build_assets(BIN_COLS)
 TEST = meta.get("test_metrics", {}).get(meta["best_model"], {})
 
 
@@ -54,8 +110,7 @@ def predict_price(area, bedrooms, bathrooms, city, district, amenities):
     row = {"area": area, "bedrooms": bedrooms, "bathrooms": bathrooms,
            "city": city, "district": district}
     for c in BIN_COLS:
-        row[c] = int(amenities.get(c, 0))
-    row["n_features"] = sum(row[c] for c in BIN_COLS)        # khớp F.add_engineered
+        row[c] = int(amenities.get(c, 0))                    # người dùng khai báo → luôn 0/1 thật
     X = pd.DataFrame([row])[F.NUM_COLS + F.CAT_COLS + BIN_COLS]
     return float(model.predict(X)[0])
 
@@ -134,7 +189,9 @@ with tab_predict:
                 st.caption(f"*(Dựa trên {region['n']:,} tin đăng tại khu vực này.)*")
 
         st.info("ℹ️ Mô hình **không dùng** 'nguồn web' làm đặc trưng — dự báo chỉ dựa trên "
-                "đặc điểm thật của phòng (diện tích, khu vực, tiện ích). Kết quả mang tính tham khảo.")
+                "đặc điểm thật của phòng (diện tích, khu vực, tiện ích). Tiện ích được huấn luyện "
+                "với **ràng buộc đơn điệu**: tick thêm tiện ích không bao giờ làm giảm giá dự báo. "
+                "Kết quả mang tính tham khảo.")
 
 # ============================== TAB 2: EDA =================================
 with tab_eda:
@@ -158,8 +215,11 @@ with tab_model:
 - **Bài toán:** hồi quy — dự báo `price` (triệu VNĐ/tháng).
 - **Mô hình triển khai:** **{meta['best_model']}** (gradient boosting + early stopping), huấn luyện
   lại trên Train+Val. Random Forest chính xác tương đương nhưng nặng ~40× nên chọn XGBoost.
-- **Đặc trưng:** diện tích, số phòng ngủ/tắm, tổng tiện ích, **thành phố/quận**, 12 cờ tiện ích.
+- **Đặc trưng:** diện tích, số phòng ngủ/tắm, **thành phố/quận**, 12 cờ tiện ích.
   *Cố ý loại `source` (nguồn web)* — là artifact thu thập, không phải yếu tố định giá thực.
+- **Làm sạch tiện ích (MNAR):** đối chiếu dữ liệu gốc cho thấy nhiều cờ tiện ích bị điền
+  ngẫu nhiên ở bước gộp nguồn → các ô đó được coi là **"không khai báo" (NaN)** thay vì "không có"
+  khi huấn luyện; đồng thời áp **ràng buộc đơn điệu** để tiện ích không làm giảm giá dự báo.
 - **Quy trình đánh giá:** chia 70/15/15 → tinh chỉnh siêu tham số → 10-fold CV → đánh giá **1 lần
   trên Test**.
 """)

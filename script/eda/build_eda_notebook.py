@@ -1,27 +1,31 @@
 """
-Sinh notebook EDA (Bước 3) cho dự án "Phân tích giá thuê nhà trọ/căn hộ theo khu vực".
+Sinh notebook EDA (Bước 3) — phiên bản v2 — cho dự án "Phân tích giá thuê nhà
+trọ/căn hộ theo khu vực" (IT4142).
 
-Notebook được dựng bằng nbformat rồi thực thi bằng nbconvert để nhúng sẵn kết quả
-và biểu đồ. Toàn bộ logic phân tích nằm trong các cell của notebook -> khi nộp bài
-chỉ cần mở notebooks/03_eda.ipynb.
+Kế thừa cấu trúc & triết lý trực quan hóa từ v1 (v1/script/eda/build_eda_notebook.py),
+ĐIỀU CHỈNH cho luồng v2:
+  - Đầu vào : v2/data/processed/rental_data_clean.csv  (sản phẩm Bước 2 — notebook 02 v2).
+  - Đầu ra  : v2/notebooks/03_eda.ipynb ; PNG/HTML → v2/docs/eda/.
+  - Kiểm toán nguồn gốc cờ tiện ích (phát hiện 7/12 cờ bị CHẾ TÁC) đã được thực hiện ở
+    NGAY Bước 2 (notebook 02 v2, mục 7) — EDA chỉ tham chiếu lại, không lặp điều tra.
+
+Notebook dựng bằng nbformat rồi thực thi bằng nbconvert để nhúng sẵn kết quả + biểu đồ.
 
 Triết lý trực quan hóa (hybrid):
-  - Biểu đồ TĨNH  : seaborn / matplotlib  -> lưu PNG sắc nét cho báo cáo PDF (Bước 6).
-  - Biểu đồ TƯƠNG TÁC: plotly             -> hover / zoom ngay trong notebook +
-                                             xuất kèm PNG (kaleido) và HTML độc lập.
+  - Biểu đồ TĨNH  : seaborn / matplotlib  -> PNG sắc nét cho báo cáo PDF (Bước 6).
+  - Biểu đồ TƯƠNG TÁC: plotly             -> hover/zoom trong notebook (+ PNG & HTML kèm).
 
-EDA chỉ tập trung trên TẬP CHO THUÊ (rental_data_clean.csv) — đúng trọng tâm bài
-toán dự báo giá THUÊ. Tập rao bán (sale_data) đơn vị giá khác hẳn (giá bán tổng,
-median ~3.450 triệu) nên cố tình KHÔNG trộn vào để tránh so sánh khập khiễng.
+EDA chỉ tập trung trên TẬP CHO THUÊ — đúng trọng tâm bài toán dự báo giá THUÊ. Tập rao
+bán (sale_data) đơn vị giá khác hẳn (giá bán tổng) nên cố tình KHÔNG trộn vào.
 
-Chạy:  python script/eda/build_eda_notebook.py
+Chạy:  python v2/script/eda/build_eda_notebook.py
 """
 from pathlib import Path
 import nbformat as nbf
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
-ROOT = Path(__file__).resolve().parents[2]
-NB_PATH = ROOT / "notebooks" / "03_eda.ipynb"
+ROOT = Path(__file__).resolve().parents[3]          # .../btl_khdl (script ở v2/script/eda/)
+NB_PATH = ROOT / "v2" / "notebooks" / "03_eda.ipynb"
 
 md = new_markdown_cell
 code = new_code_cell
@@ -37,8 +41,8 @@ mô tả, phân tích đơn biến / đa biến, trực quan hóa, phân cụm K
 *mọi phân tích đều hướng tới mục tiêu cuối: hiểu yếu tố nào chi phối **giá thuê** để phục vụ
 mô hình hồi quy ở Bước 4.*
 
-**Dữ liệu đầu vào (kết quả Bước 2):** `data/processed/rental_data_clean.csv`
-— giá tính bằng **triệu VNĐ/tháng**.
+**Dữ liệu đầu vào (kết quả Bước 2 — notebook `02_data_cleaning.ipynb`):**
+`v2/data/processed/rental_data_clean.csv` — giá tính bằng **triệu VNĐ/tháng**.
 
 ---
 ### Hai loại biểu đồ trong notebook (hybrid)
@@ -51,6 +55,10 @@ mô hình hồi quy ở Bước 4.*
 > `district`, `city`, `dtcenter`. Notebook tự **trích xuất `city`/`district` từ `full_address`**
 > và thay biến `dtcenter` (cần geocoding — ngoài phạm vi) bằng các biến phái sinh
 > `n_features` (tổng tiện ích) và `price_per_m2` (đơn giá/m²).
+>
+> 🔗 **Liên hệ Bước 2:** việc **kiểm toán nguồn gốc 12 cờ tiện ích** (phát hiện 7 cờ bị
+> *điền ngẫu nhiên* khi gộp nguồn) đã được làm ở notebook 02 v2 — tại đây ta chỉ **mô tả
+> dữ liệu như-nó-là** và nhắc lại kết luận đó ở mục 7 & 9.2.
 """))
 
 # ---- Setup -----------------------------------------------------------------
@@ -105,12 +113,12 @@ pio.templates["btl"] = go.layout.Template(layout=dict(
 ))
 pio.templates.default = "plotly_white+btl"
 
-# ---------- Đường dẫn ----------
+# ---------- Đường dẫn (v2-local) ----------
 ROOT = Path.cwd()
 if ROOT.name == "notebooks":
-    ROOT = ROOT.parent
-DATA  = ROOT / "data" / "processed"
-FIG   = ROOT / "docs" / "bao_cao" / "eda"            # PNG cho báo cáo
+    ROOT = ROOT.parents[1]                           # → .../btl_khdl
+DATA  = ROOT / "v2" / "data" / "processed"           # đầu vào: sản phẩm Bước 2 (v2)
+FIG   = ROOT / "v2" / "docs" / "eda"                 # PNG cho báo cáo
 IHTML = FIG / "interactive"                          # HTML tương tác độc lập
 FIG.mkdir(parents=True, exist_ok=True)
 IHTML.mkdir(parents=True, exist_ok=True)
@@ -130,6 +138,7 @@ def show_px(fig, name, w=1000, h=600):
     fig.show()
 
 print("ROOT:", ROOT)
+print("DATA ->", DATA)
 print("PNG  ->", FIG)
 print("HTML ->", IHTML)
 print("seaborn", sns.__version__, "| plotly", pio.__version__ if hasattr(pio,'__version__') else "?")
@@ -158,6 +167,9 @@ cells.append(md(r"""## 2. Trích xuất đặc trưng phục vụ EDA
 | `n_features` | Tổng số tiện ích → proxy mức độ đầy đủ tiện nghi |
 | `price_per_m2` | Đơn giá/m² → so sánh khu vực công bằng hơn giá tuyệt đối |
 | `log_price` | Log giá → kiểm tra/giảm độ lệch phải, hữu ích cho mô hình tuyến tính |
+
+> Logic tách `city`/`district` ở đây **trùng khít** với mô-đun dùng chung train/serve của
+> Bước 4 — đảm bảo không lệch train/serve.
 """))
 cells.append(code(r"""
 PROVINCES = ["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Bình Dương", "Hưng Yên",
@@ -214,7 +226,7 @@ src["pct"] = (src["count"] / src["count"].sum() * 100).round(1)
 fig = px.bar(src, x="count", y="source", orientation="h",
              text=src["pct"].map(lambda v: f"{v}%"),
              color="count", color_continuous_scale="Blues",
-             title="Số bài đăng theo nguồn cào (10 website tích hợp ở Bước 2)")
+             title="Số bài đăng theo nguồn cào (các website cho thuê tích hợp ở Bước 2)")
 fig.update_layout(yaxis=dict(categoryorder="total ascending"),
                   coloraxis_showscale=False, xaxis_title="Số bài đăng", yaxis_title="")
 fig.update_traces(textposition="outside",
@@ -270,7 +282,7 @@ city_stats = (rental.assign(city=rental["city"].fillna("(không rõ)"))
 city_stats["pct"] = (city_stats["n"] / city_stats["n"].sum() * 100).round(2)
 
 fig, axes = plt.subplots(1, 2, figsize=(15, 6))
-# (a) Số bài theo thành phố (thang log vì lệch 88% vs <0.2%)
+# (a) Số bài theo thành phố (thang log vì lệch mạnh)
 top = city_stats.head(10).iloc[::-1]
 bars = axes[0].barh(top.index, top["n"], color=sns.color_palette("crest", len(top)))
 for b, n, p in zip(bars, top["n"], top["pct"]):
@@ -411,7 +423,7 @@ thế nào giữa các quận/huyện, và khu nào "đắt đỏ" thực sự k
 
 cells.append(md(r"""### 6.1. Box Plot — phân tán giá theo Quận/Huyện (Top 12 theo **số bài**) — *tĩnh*
 
-Top 12 quận **nhiều bài đăng nhất** → tất cả đều ở **Hà Nội** (nơi chiếm ~88% dữ liệu, xem 3.3).
+Top 12 quận **nhiều bài đăng nhất** → hầu hết đều ở **Hà Nội** (nơi chiếm phần lớn dữ liệu, xem 3.3).
 Đây là so sánh *trong nội bộ Hà Nội*. Muốn xem khu đắt nhất toàn quốc theo đơn giá/m², xem 6.2.
 """))
 cells.append(code(r"""
@@ -485,6 +497,15 @@ cells.append(md(r"""## 7. Phân tích tiện ích (amenities) — 12 đặc trư
 Mỗi bài đăng có 12 cờ tiện ích (máy lạnh, thang máy, bảo vệ 24/24, …). Đây là nhóm
 đặc trưng quan trọng cho mô hình dự báo, nên ta xem (a) tiện ích nào **phổ biến** và
 (b) tiện ích nào gắn với **chênh lệch giá** lớn nhất.
+
+> ⚠️ **Cảnh báo nguồn gốc dữ liệu (đã kiểm toán ở Bước 2 — notebook `02_data_cleaning.ipynb`, mục 7):**
+> đối chiếu dữ liệu thô từng nguồn cho thấy chỉ **5/12 cờ** (máy lạnh, máy giặt, nước nóng,
+> bảo vệ 24/24, hầm để xe) có cột gốc thật ở đa số nguồn; **7 cờ còn lại chỉ thật ở
+> `phongtro123`/`lozido` (~3% dữ liệu)** và bị *điền ngẫu nhiên* khi gộp nguồn ở Bước 2
+> (`chothuenhadattoanvn` + `github_*` không có cờ thật nào — bằng chứng: tỷ-lệ-xuất-hiện
+> *trùng khít* giữa các nguồn độc lập). Các thống kê dưới đây mô tả dữ liệu **như-nó-là**;
+> khi vào mô hình (Bước 4), các ô chế tác được mask NaN theo cơ chế MNAR và `n_features`
+> bị loại khỏi đặc trưng.
 """))
 
 cells.append(md("### 7.1. Mức độ phổ biến của từng tiện ích"))
@@ -530,6 +551,9 @@ plt.tight_layout(); save_mpl(fig, "08_amenity_price_uplift.png"); plt.show()
 print("→ Thang máy / hầm để xe / bảo vệ 24/24 gắn với chung cư & giá cao hơn. Một số tiện ích "
       "'cơ bản' lại gắn giá thấp hơn — KHÔNG phải vì tiện ích làm giảm giá mà do thiên lệch "
       "nguồn (xem nghịch lý Simpson ở mục 9.2).")
+print("→ LƯU Ý: với 7 cờ chế tác (xem cảnh báo đầu mục 7), chênh lệch ở đây gần như chỉ là "
+      "nhiễu lấy mẫu; còn 5 cờ thật mang cả confound 'tin rẻ quảng cáo tiện ích, căn hộ đắt "
+      "không liệt kê'. Mô hình Bước 4 xử lý cả hai: mask MNAR + ràng buộc đơn điệu.")
 """.strip()))
 
 # ============================================================================
@@ -539,7 +563,7 @@ cells.append(md("## 8. Quan hệ song biến: Diện tích / Phòng ngủ ↔ Gi
 
 cells.append(md(r"""### 8.1. Mật độ Diện tích ↔ Giá — *tương tác*
 
-Với 133k bài đăng, biểu đồ điểm bị **chồng lấp** thành đám mây khó đọc. Thay bằng
+Với hơn trăm nghìn bài đăng, biểu đồ điểm bị **chồng lấp** thành đám mây khó đọc. Thay bằng
 **bản đồ mật độ (density heatmap)**: mỗi ô tô đậm theo *số bài đăng* rơi vào ô. Do mật độ
 **lệch rất mạnh** (vùng lõi đông gấp hàng nghìn lần phần còn lại), ta dùng **thang màu log**
 để lộ rõ cả cấu trúc thưa — di chuột để xem số bài thực của từng ô.
@@ -636,8 +660,12 @@ print("Tương quan Spearman(n_features, price) TRONG từng nguồn (≥2.000 b
 for s, g in rental.groupby("source"):
     if len(g) >= 2000:
         print(f"  {s:22s} r = {g['n_features'].corr(g['price'], method='spearman'):+.3f}  (n={len(g):,})")
-print("\n→ Quan hệ âm toàn cục chủ yếu do THIÊN LỆCH NGUỒN, không phải tiện ích làm giảm giá. "
-      "Khi xây mô hình nên thêm 'source' làm biến kiểm soát hoặc cân bằng lại theo nguồn.")
+print("\n→ Quan hệ âm toàn cục chủ yếu do THIÊN LỆCH NGUỒN, không phải tiện ích làm giảm giá.")
+print("→ Các hệ số ≈ 0 TUYỆT ĐỐI ở nhiều nguồn (ctndtvn, github_*) chính là manh mối đã được "
+      "kiểm toán ở BƯỚC 2 (notebook 02): cờ tiện ích của các nguồn đó bị ĐIỀN NGẪU NHIÊN khi "
+      "gộp (biến ngẫu nhiên độc lập ⇒ tương quan 0 với mọi thứ).")
+print("→ Hệ quả cho mô hình (Bước 4): loại 'source' (artifact thu thập), loại 'n_features' "
+      "(tổng của cờ chế tác), mask MNAR các ô chế tác, và ràng buộc đơn điệu 12 cờ tiện ích.")
 """.strip()))
 
 # ============================================================================
@@ -764,7 +792,7 @@ print("→ PC1 phản ánh 'quy mô' (diện tích + số phòng + giá cùng t�
 # ============================================================================
 cells.append(md(r"""## 12. Tổng kết các khám phá (Insights)
 
-1. **Chất lượng & nguồn dữ liệu:** Dữ liệu tích hợp từ 10 nguồn nhưng **mất cân bằng nặng**
+1. **Chất lượng & nguồn dữ liệu:** Dữ liệu tích hợp từ nhiều nguồn nhưng **mất cân bằng nặng**
    (một nguồn chiếm ~71%). Trường `posted_date` có ~46% giá trị tương lai (sentinel cào) →
    không dùng cho phân tích thời gian. `price`/`area` đã được **lọc ngưỡng** ở Bước 2 nên
    không còn ngoại lệ cực đoan.
@@ -774,8 +802,8 @@ cells.append(md(r"""## 12. Tổng kết các khám phá (Insights)
 
 3. **Yếu tố khu vực (lõi đề tài):** Giá thuê và **đơn giá/m²** khác biệt rõ giữa các quận
    → `district`/`city` là đặc trưng dự báo mạnh. Xếp hạng theo **đơn giá/m²** phản ánh độ
-   "đắt đỏ" công bằng hơn giá tuyệt đối. **Lưu ý mất cân bằng địa lý** (mục 3.3): ~88% dữ
-   liệu là Hà Nội, ~9% HCM → top "nhiều bài" là Hà Nội còn top "đắt/m²" là HCM trung tâm;
+   "đắt đỏ" công bằng hơn giá tuyệt đối. **Lưu ý mất cân bằng địa lý** (mục 3.3): phần lớn dữ
+   liệu là Hà Nội, kế đến HCM → top "nhiều bài" là Hà Nội còn top "đắt/m²" là HCM trung tâm;
    kết luận chủ yếu áp dụng cho Hà Nội, các tỉnh khác thiếu mẫu để dự báo riêng.
 
 4. **Diện tích là yếu tố mạnh nhất:** `area` tương quan dương rõ với `price`; `price_per_m2`
@@ -783,7 +811,9 @@ cells.append(md(r"""## 12. Tổng kết các khám phá (Insights)
 
 5. **Tiện ích:** Thang máy/hầm xe/bảo vệ 24/24 gắn với giá cao hơn. Tương quan **âm** giữa
    `n_features` và giá ở mức toàn cục là **nghịch lý Simpson do thiên lệch nguồn** — trong
-   từng nguồn quan hệ không còn âm. ⇒ Mô hình nên thêm `source` làm biến kiểm soát.
+   từng nguồn quan hệ không còn âm. ⚠️ Sâu hơn: **kiểm toán Bước 2** đã chứng minh 7/12 cờ bị
+   *điền ngẫu nhiên* khi gộp nguồn ⇒ Bước 4 loại `source` & `n_features`, mask MNAR, ràng
+   buộc đơn điệu 12 cờ.
 
 6. **Phân khúc thị trường:** K-Means (K=4) tách rõ 4 phân khúc từ *bình dân/nhỏ* đến
    *cao cấp/rộng*, hữu ích cho định vị sản phẩm trong app demo (Bước 6).
@@ -791,8 +821,8 @@ cells.append(md(r"""## 12. Tổng kết các khám phá (Insights)
 7. **PCA:** 2 thành phần đầu giải thích phần lớn phương sai; PC1 ≈ "quy mô" — dữ liệu có
    cấu trúc tuyến tính rõ, phù hợp cả mô hình tuyến tính lẫn phi tuyến.
 
-> 📦 Biểu đồ tĩnh (PNG) lưu tại `docs/bao_cao/eda/` cho báo cáo PDF; biểu đồ tương tác (HTML)
-> tại `docs/bao_cao/eda/interactive/`.
+> 📦 Biểu đồ tĩnh (PNG) lưu tại `v2/docs/eda/` cho báo cáo PDF; biểu đồ tương tác (HTML)
+> tại `v2/docs/eda/interactive/`.
 """))
 
 # ============================================================================
@@ -800,5 +830,5 @@ nb = new_notebook(cells=cells)
 nb.metadata["kernelspec"] = {"name": "btl_khdl", "display_name": "Python (btl_khdl)", "language": "python"}
 nb.metadata["language_info"] = {"name": "python"}
 NB_PATH.parent.mkdir(parents=True, exist_ok=True)
-nbf.write(nb, NB_PATH)
-print("Đã ghi notebook:", NB_PATH)
+nbf.write(nb, str(NB_PATH))
+print("Đã ghi notebook (chưa thực thi):", NB_PATH)

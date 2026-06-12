@@ -1,0 +1,389 @@
+{
+  "n_total": 133586,
+  "sources": [
+    {
+      "name": "chothuephongtro",
+      "count": 95086,
+      "pct": 71.2
+    },
+    {
+      "name": "nhatot",
+      "count": 9920,
+      "pct": 7.4
+    },
+    {
+      "name": "chothuenhadattoanvn",
+      "count": 9866,
+      "pct": 7.4
+    },
+    {
+      "name": "github_hcm",
+      "count": 8771,
+      "pct": 6.6
+    },
+    {
+      "name": "github_hn",
+      "count": 2879,
+      "pct": 2.2
+    },
+    {
+      "name": "phongtro123",
+      "count": 2663,
+      "pct": 2.0
+    },
+    {
+      "name": "github_housing",
+      "count": 1635,
+      "pct": 1.2
+    },
+    {
+      "name": "lozido",
+      "count": 1313,
+      "pct": 1.0
+    },
+    {
+      "name": "facebook",
+      "count": 772,
+      "pct": 0.6
+    },
+    {
+      "name": "github_dn",
+      "count": 681,
+      "pct": 0.5
+    }
+  ],
+  "imbalance_top": {
+    "name": "chothuephongtro",
+    "pct": 71.2
+  },
+  "missing": {
+    "detail_link": 96.4,
+    "description": 80.4,
+    "district_pct": 2.2,
+    "district_count": 2938
+  },
+  "posted_future_pct": 46,
+  "descriptive": {
+    "price": {
+      "mean": 4.8,
+      "std": 2.87,
+      "min": 0.5,
+      "median": 4.0,
+      "max": 17.0,
+      "skew": 1.55,
+      "kurt": 2.46
+    },
+    "area": {
+      "mean": 41.48,
+      "std": 27.72,
+      "min": 8.0,
+      "median": 30.0,
+      "max": 180.0,
+      "skew": 1.59,
+      "kurt": 2.35
+    },
+    "bedrooms": {
+      "mean": 1.51,
+      "std": 0.98,
+      "min": 0.0,
+      "median": 1.0,
+      "max": 6.0,
+      "skew": 2.08,
+      "kurt": 4.45
+    },
+    "bathrooms": {
+      "mean": 1.29,
+      "std": 0.73,
+      "min": 0.0,
+      "median": 1.0,
+      "max": 5.0,
+      "skew": 2.89,
+      "kurt": 9.91
+    },
+    "n_features": {
+      "mean": 6.56,
+      "std": 1.94,
+      "min": 0.0,
+      "median": 7.0,
+      "max": 12.0,
+      "skew": -0.12,
+      "kurt": -0.2
+    }
+  },
+  "geo": [
+    {
+      "city": "Hà Nội",
+      "count": 117574,
+      "pct": 88.0
+    },
+    {
+      "city": "Hồ Chí Minh",
+      "count": 11559,
+      "pct": 8.7
+    },
+    {
+      "city": "Đà Nẵng",
+      "count": 1411,
+      "pct": 1.1
+    }
+  ],
+  "geo_provinces": 19,
+  "district_cardinality": 353,
+  "spearman_price": {
+    "area": 0.366,
+    "bedrooms": 0.115,
+    "bathrooms": 0.141,
+    "n_features": -0.119
+  },
+  "uplift": {
+    "Đầy đủ nội thất": -0.01,
+    "gác": 0.02,
+    "kệ bếp": 0.02,
+    "máy lạnh": -0.73,
+    "máy giặt": -0.41,
+    "tủ lạnh": 0.01,
+    "thang máy": -0.02,
+    "Không chung chủ": -0.03,
+    "Giờ giấc tự do": 0.03,
+    "bảo vệ 24/24": -1.44,
+    "hầm để xe": -1.01,
+    "nước nóng": -0.16
+  },
+  "simpson_by_source": {
+    "phongtro123": 0.212,
+    "chothuenhadattoanvn": 0.013,
+    "github_hn": -0.003,
+    "github_hcm": -0.007,
+    "chothuephongtro": -0.039,
+    "nhatot": -0.1
+  },
+  "simpson_global": -0.119,
+  "pca": {
+    "pc1": 36.4,
+    "pc2": 21.2,
+    "total": 57.6
+  },
+  "split": {
+    "train": 93563,
+    "val": 19985,
+    "test": 20038,
+    "scheme": "70/15/15"
+  },
+  "best_params": {
+    "Ridge": {
+      "ridge__alpha": 1.0
+    },
+    "LASSO": {
+      "lasso__alpha": 0.001
+    },
+    "Random Forest": {
+      "rf__n_estimators": 200,
+      "rf__min_samples_split": 5,
+      "rf__max_depth": 10
+    },
+    "XGBoost": {
+      "xgb__subsample": 0.6,
+      "xgb__reg_lambda": 10,
+      "xgb__reg_alpha": 1,
+      "xgb__n_estimators": 100,
+      "xgb__max_depth": 10,
+      "xgb__learning_rate": 0.05,
+      "xgb__colsample_bytree": 1.0,
+      "early_stop_best_iteration": 126
+    }
+  },
+  "cv_metrics": {
+    "OLS": {
+      "CV_RMSE_mean": 2.5825,
+      "CV_RMSE_std": 0.0182,
+      "CV_MAE_mean": 1.9546,
+      "CV_R2_mean": 0.193,
+      "CV_R2_std": 0.0077
+    },
+    "Ridge": {
+      "CV_RMSE_mean": 2.5825,
+      "CV_RMSE_std": 0.0182,
+      "CV_MAE_mean": 1.9545,
+      "CV_R2_mean": 0.193,
+      "CV_R2_std": 0.0077
+    },
+    "LASSO": {
+      "CV_RMSE_mean": 2.587,
+      "CV_RMSE_std": 0.0189,
+      "CV_MAE_mean": 1.9574,
+      "CV_R2_mean": 0.1902,
+      "CV_R2_std": 0.0077
+    },
+    "Random Forest": {
+      "CV_RMSE_mean": 1.6569,
+      "CV_RMSE_std": 0.0124,
+      "CV_MAE_mean": 0.9952,
+      "CV_R2_mean": 0.6677,
+      "CV_R2_std": 0.0071
+    },
+    "XGBoost": {
+      "CV_RMSE_mean": 1.8814,
+      "CV_RMSE_std": 0.0075,
+      "CV_MAE_mean": 1.2467,
+      "CV_R2_mean": 0.5716,
+      "CV_R2_std": 0.0076
+    }
+  },
+  "test_metrics": {
+    "OLS": {
+      "Test_MAE": 1.9579,
+      "Test_RMSE": 2.5857,
+      "Test_R2": 0.1899
+    },
+    "Ridge": {
+      "Test_MAE": 1.9579,
+      "Test_RMSE": 2.5857,
+      "Test_R2": 0.1899
+    },
+    "LASSO": {
+      "Test_MAE": 1.9612,
+      "Test_RMSE": 2.5893,
+      "Test_R2": 0.1876
+    },
+    "Random Forest": {
+      "Test_MAE": 1.0019,
+      "Test_RMSE": 1.6657,
+      "Test_R2": 0.6638
+    },
+    "XGBoost": {
+      "Test_MAE": 1.2565,
+      "Test_RMSE": 1.8954,
+      "Test_R2": 0.5647
+    }
+  },
+  "most_accurate_test": "Random Forest",
+  "ablation": {
+    "fe_pca_rmse": {
+      "V0 Thô (không FE) | OLS": 2.6807,
+      "V0 Thô (không FE) | Ridge": 2.6807,
+      "V0 Thô (không FE) | XGBoost": 1.8299,
+      "V1 FE, không chuẩn hóa | OLS": 2.5862,
+      "V1 FE, không chuẩn hóa | Ridge": 2.5862,
+      "V1 FE, không chuẩn hóa | XGBoost": 1.657,
+      "V2 FE + chuẩn hóa | OLS": 2.5862,
+      "V2 FE + chuẩn hóa | Ridge": 2.5862,
+      "V2 FE + chuẩn hóa | XGBoost": 1.657,
+      "V3 FE + PCA(95%) | OLS": 2.6218,
+      "V3 FE + PCA(95%) | Ridge": 2.6218,
+      "V3 FE + PCA(95%) | XGBoost": 1.6845
+    },
+    "log_target": {
+      "OLS | price (gốc)": {
+        "MAE": 1.9633,
+        "RMSE": 2.5862,
+        "R²": 0.1947,
+        "RMSE giá cao": 5.9454,
+        "Bias giá cao": -5.6135
+      },
+      "OLS | log1p(price)": {
+        "MAE": 1.8819,
+        "RMSE": 2.6358,
+        "R²": 0.1635,
+        "RMSE giá cao": 6.6209,
+        "Bias giá cao": -6.3072
+      },
+      "Ridge | price (gốc)": {
+        "MAE": 1.9632,
+        "RMSE": 2.5862,
+        "R²": 0.1947,
+        "RMSE giá cao": 5.9462,
+        "Bias giá cao": -5.6143
+      },
+      "Ridge | log1p(price)": {
+        "MAE": 1.8818,
+        "RMSE": 2.6359,
+        "R²": 0.1634,
+        "RMSE giá cao": 6.6217,
+        "Bias giá cao": -6.3079
+      },
+      "XGBoost | price (gốc)": {
+        "MAE": 0.9905,
+        "RMSE": 1.657,
+        "R²": 0.6694,
+        "RMSE giá cao": 3.5527,
+        "Bias giá cao": -2.3434
+      },
+      "XGBoost | log1p(price)": {
+        "MAE": 0.9747,
+        "RMSE": 1.6937,
+        "R²": 0.6546,
+        "RMSE giá cao": 3.9665,
+        "Bias giá cao": -2.7844
+      }
+    },
+    "outliers_xgb": {
+      "Train CÓ outlier": {
+        "MAE": 2.128,
+        "RMSE": 9.7467,
+        "R2": -10.8285
+      },
+      "Train ĐÃ lọc outlier": {
+        "MAE": 0.9887,
+        "RMSE": 1.6517,
+        "R2": 0.6603
+      }
+    }
+  },
+  "fe_dims": 80,
+  "cat_dims": 65,
+  "size_xgb_kb": 858,
+  "size_rf_kb": 5690,
+  "audit": {
+    "typical_input": {
+      "area": 25,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "city": "Hà Nội",
+      "district": "Quận Nam Từ Liêm"
+    },
+    "variants": {
+      "initial": {
+        "MAE": 1.072,
+        "RMSE": 1.74,
+        "R2": 0.633,
+        "neg_flags": 4,
+        "mono_viol": 7,
+        "trees": 194
+      },
+      "mask_only": {
+        "MAE": 0.984,
+        "RMSE": 1.647,
+        "R2": 0.671,
+        "neg_flags": 7,
+        "mono_viol": 4,
+        "trees": 136
+      },
+      "mask_monotone": {
+        "MAE": 1.257,
+        "RMSE": 1.895,
+        "R2": 0.565,
+        "neg_flags": 0,
+        "mono_viol": 0,
+        "trees": 126
+      }
+    },
+    "ac_effect_initial": -0.335,
+    "neg_effects_initial": {
+      "máy giặt": -0.415,
+      "máy lạnh": -0.335,
+      "nước nóng": -0.272,
+      "hầm để xe": -0.165
+    },
+    "nhatot": {
+      "median_price": 9.0,
+      "others_median": 4.0,
+      "ac_rate": 22,
+      "wash_rate": 11,
+      "hotwater_rate": 6,
+      "share_in_ac0": 18.7,
+      "share_in_ac1": 2.4
+    },
+    "share_zero_flag_src": 16.6,
+    "share_7fab_real_src": 3.0
+  }
+}

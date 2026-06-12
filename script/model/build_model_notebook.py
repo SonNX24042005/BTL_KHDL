@@ -1,9 +1,12 @@
 """
-Sinh notebook Bước 4 — XÂY DỰNG MÔ HÌNH HỌC MÁY (Slide L7) cho dự án
+Sinh notebook Bước 4 — XÂY DỰNG MÔ HÌNH HỌC MÁY (Slide L7) — phiên bản v2 — cho dự án
 "Phân tích & dự báo giá thuê nhà trọ/căn hộ theo khu vực".
 
-Cùng triết lý với builder EDA (Bước 3): dựng notebook bằng nbformat rồi thực thi bằng
-nbconvert để nhúng sẵn kết quả + biểu đồ → khi nộp chỉ cần mở notebooks/04_modeling.ipynb.
+Kế thừa cấu trúc & nội dung từ v1 (v1/script/model/build_model_notebook.py), ĐIỀU CHỈNH
+cho luồng v2:
+  - Đầu vào : v2/data/processed/rental_data_clean.csv (sản phẩm Bước 2 — notebook 02 v2).
+  - FE chung: v2/script/model/features.py (đồng bộ train/serve, sao từ v1).
+  - Đầu ra  : v2/notebooks/04_modeling.ipynb ; mô hình → v2/models/ ; PNG → v2/docs/model/.
 
 Phạm vi đúng BƯỚC 4 (theo project_workflow):
   • Chuẩn bị X, y; chia Train/Validation/Test = 70/15/15.
@@ -13,17 +16,14 @@ Phạm vi đúng BƯỚC 4 (theo project_workflow):
   • Chọn mô hình tốt nhất theo Validation rồi LƯU bằng joblib.
   *Tập TEST được giữ NGUYÊN cho Bước 5 (Model Assessment) — notebook này không đụng tới.*
 
-Feature engineering dùng module chung script/model/features.py (đồng bộ train/serve).
-
-Chạy:  python script/model/build_model_notebook.py   (chỉ dựng .ipynb chưa thực thi)
-Thực thi & nhúng output: dùng nbconvert (xem lệnh ở cuối tài liệu / script gọi ngoài).
+Chạy:  python v2/script/model/build_model_notebook.py   (chỉ dựng .ipynb chưa thực thi)
 """
 from pathlib import Path
 import nbformat as nbf
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
-ROOT = Path(__file__).resolve().parents[2]
-NB_PATH = ROOT / "notebooks" / "04_modeling.ipynb"
+ROOT = Path(__file__).resolve().parents[3]          # .../btl_khdl (script ở v2/script/model/)
+NB_PATH = ROOT / "v2" / "notebooks" / "04_modeling.ipynb"
 
 md = new_markdown_cell
 code = new_code_cell
@@ -35,15 +35,16 @@ cells.append(md(r"""# Bước 4 — Xây dựng Mô hình Học máy (Machine Le
 **Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4142)*
 
 Notebook thực hiện **Bước 4** trong vòng đời Khai phá Tri thức (Slide L7): từ dữ liệu đã làm
-sạch (Bước 2) và những hiểu biết từ EDA (Bước 3), ta **huấn luyện và tinh chỉnh 5 mô hình hồi
-quy** để dự báo `price` (giá thuê, triệu VNĐ/tháng), rồi chọn ra mô hình tốt nhất.
+sạch (Bước 2 — notebook `02_data_cleaning.ipynb`) và những hiểu biết từ EDA (Bước 3 — notebook
+`03_eda.ipynb`), ta **huấn luyện và tinh chỉnh 5 mô hình hồi quy** để dự báo `price` (giá thuê,
+triệu VNĐ/tháng), rồi chọn ra mô hình tốt nhất.
 
 | Yếu tố | Giá trị |
 |---|---|
 | **Task (T)** | Dự đoán giá thuê nhà trọ/căn hộ |
 | **Loại bài toán** | **Hồi quy** — đầu ra `y = price` là số thực liên tục |
 | **Performance (P)** | MAE, RMSE, R² (đánh giá trên Validation; Test để dành Bước 5) |
-| **Experience (E)** | `data/processed/rental_data_clean.csv` (133k bản ghi, đã lọc `price≤17`, `area≤180`) |
+| **Experience (E)** | `v2/data/processed/rental_data_clean.csv` (≈133.6k bản ghi, đã lọc `price≤17`, `area≤180`) |
 
 ### 5 thuật toán (nguyên tắc *No-Free-Lunch* — phải thử nhiều rồi so sánh)
 1. **OLS** (hồi quy tuyến tính thường) — *baseline*.
@@ -60,7 +61,9 @@ quy** để dự báo `price` (giá thuê, triệu VNĐ/tháng), rồi chọn ra
 > - `price` lệch phải ⇒ EDA 5.2 gợi ý thử `log(price)`; **thực nghiệm đối sánh 11.2 bác bỏ**
 >   (log chỉ cải thiện MAE nhẹ, làm RMSE/R² và phân khúc giá cao tệ hơn) ⇒ **mọi mô hình học
 >   trên `price` gốc**.
-> - Feature engineering tái sử dụng `script/model/features.py` để **đồng bộ với app demo (Bước 6)**.
+> - Feature engineering tái sử dụng `v2/script/model/features.py` để **đồng bộ với app demo (Bước 6)**.
+> - 🔗 Cờ tiện ích bị chế tác đã được **kiểm toán ở Bước 2** (notebook 02 v2, mục 7); ở đây ta
+>   **áp dụng** kết quả đó (mask MNAR + ràng buộc đơn điệu).
 >
 > **Theo góp ý giảng viên**, mục **11** bổ sung 3 **thực nghiệm đối sánh (ablation)**:
 > (11.1) dữ liệu thô ↔ Feature Engineering ↔ FE + PCA (kèm có/không chuẩn hóa);
@@ -103,16 +106,16 @@ matplotlib.rcParams.update({
     "axes.labelsize": 11, "axes.edgecolor": "#555", "grid.alpha": 0.30,
 })
 
-# ---------- Đường dẫn ----------
+# ---------- Đường dẫn (v2-local) ----------
 ROOT = Path.cwd()
 if ROOT.name == "notebooks":
-    ROOT = ROOT.parent
-sys.path.insert(0, str(ROOT / "script" / "model"))
-import features as F                       # feature engineering dùng chung
+    ROOT = ROOT.parents[1]                           # → .../btl_khdl
+sys.path.insert(0, str(ROOT / "v2" / "script" / "model"))
+import features as F                                 # feature engineering dùng chung (v2)
 
-DATA   = ROOT / "data" / "processed"
-FIG    = ROOT / "docs" / "bao_cao" / "model"
-MODELS = ROOT / "models"
+DATA   = ROOT / "v2" / "data" / "processed"          # đầu vào: sản phẩm Bước 2 (v2)
+FIG    = ROOT / "v2" / "docs" / "model"
+MODELS = ROOT / "v2" / "models"
 FIG.mkdir(parents=True, exist_ok=True)
 MODELS.mkdir(parents=True, exist_ok=True)
 
@@ -120,6 +123,7 @@ def save_mpl(fig, name):
     fig.savefig(FIG / name, dpi=150, bbox_inches="tight", facecolor="white")
 
 print("scikit-learn", sklearn.__version__, "| xgboost", xgboost.__version__)
+print("DATA ->", DATA)
 print("PNG  ->", FIG)
 print("Mô hình ->", MODELS)
 """.strip()))
@@ -127,25 +131,34 @@ print("Mô hình ->", MODELS)
 # ---- 1. Load + FE ----------------------------------------------------------
 cells.append(md(r"""## 1. Nạp dữ liệu & Chuẩn bị đặc trưng (X) và mục tiêu (y)
 
-Tái sử dụng `features.build_Xy()` — tách `city`/`district`, tính `n_features` (tổng tiện ích),
+Tái sử dụng `features.build_Xy()` — tách `city`/`district`, **mask cờ tiện ích chế tác (MNAR)**,
 rồi gom các nhóm cột đầu vào. **Cố ý loại** các cột gây rò rỉ nhãn hoặc nhiễu:
 
 | Cột bị loại | Lý do |
 |---|---|
 | `source` | **nguồn web cào** chỉ là *artifact thu thập dữ liệu*, không phải yếu tố định giá thực; app demo cũng không có input này ⇒ cố ý loại để mô hình học từ đặc điểm BĐS, không từ "tin lấy ở web nào" |
+| `n_features` | tổng của 12 cờ tiện ích, nhưng **7/12 cờ bị chế tác** với đa số nguồn (xem MNAR bên dưới) ⇒ phép đếm vô nghĩa, lại còn mang "dấu vân tay nguồn" |
 | `price_per_m2`, `log_price` | suy ra từ `price` ⇒ **rò rỉ nhãn** (data leakage) |
 | `posted_date` | ~46% là sentinel ngày tương lai (EDA 3.2) |
 | `description`, `detail_link` | thiếu phần lớn / không mang tín hiệu giá |
 | `full_address` | đã thay bằng `city` + `district` |
 
+**MNAR — cờ tiện ích bị chế tác khi gộp nguồn (đã kiểm toán ở Bước 2, notebook 02 v2):** đối
+chiếu raw ↔ combined cho thấy chỉ **5 cờ** có cột gốc thật ở đa số nguồn (máy lạnh, máy giặt,
+nước nóng, bảo vệ, hầm xe); 7 cờ còn lại chỉ thật ở `phongtro123`/`lozido` (~3% dữ liệu), với
+các nguồn khác chúng được **điền ngẫu nhiên** lúc gộp (corr với giá trong từng nguồn ≈ 0);
+`chothuenhadattoanvn` + `github_hcm/hn/dn` không có cờ thật nào. `mask_fabricated()` chuyển các
+ô chế tác thành **NaN** ("không khai báo" ≠ "không có") — XGBoost/Random Forest xử lý NaN native,
+mô hình tuyến tính dùng imputer.
+
 **Đặc trưng đưa vào mô hình:**
-- **Số** (chuẩn hóa Z-score): `area`, `bedrooms`, `bathrooms`, `n_features`.
+- **Số** (chuẩn hóa Z-score): `area`, `bedrooms`, `bathrooms`.
 - **Danh mục** (One-Hot, gộp hạng mục hiếm): `city`, `district`.
-- **Nhị phân** (giữ nguyên 0/1): 12 cờ tiện ích `feature_*`.
+- **Nhị phân**: 12 cờ tiện ích `feature_*` (0/1; NaN nếu nguồn không khai báo).
 """))
 cells.append(code(r"""
 rental = pd.read_csv(DATA / "rental_data_clean.csv", low_memory=False)
-X, y, COL_GROUPS = F.build_Xy(rental)
+X, y, COL_GROUPS = F.build_Xy(rental)        # mask_mnar=True mặc định: cờ chế tác -> NaN
 
 print(f"X: {X.shape[0]:,} dòng × {X.shape[1]} cột đầu vào (trước One-Hot)")
 print(f"y = price: min={y.min()}, median={y.median()}, mean={y.mean():.2f}, max={y.max()} (triệu/tháng)")
@@ -153,6 +166,9 @@ print("Nhóm cột:", {k: len(v) for k, v in COL_GROUPS.items()})
 print("  • num:", COL_GROUPS["num"])
 print("  • cat:", COL_GROUPS["cat"])
 print("  • bin:", len(COL_GROUPS["bin"]), "cờ tiện ích feature_*")
+nan_share = X[COL_GROUPS["bin"]].isna().mean().sort_values()
+print(f"\nTỷ lệ NaN sau mask MNAR: {nan_share.min()*100:.0f}% (cờ thật nhiều nguồn) "
+      f"→ {nan_share.max()*100:.0f}% (cờ chỉ thật ở phongtro123/lozido)")
 X.head(3)
 """.strip()))
 
@@ -187,9 +203,11 @@ Một `ColumnTransformer` **duy nhất** dùng cho cả 5 mô hình (nhất quá
 
 - **Số** → `StandardScaler` (bắt buộc cho mô hình tuyến tính có phạt; vô hại với cây).
 - **Danh mục** → `OneHotEncoder` **gộp hạng mục hiếm** (`min_frequency=100`) để chặn bùng nổ
-  chiều do `district` (360 giá trị) / `city` (204) cardinality cao, đồng thời xử lý được hạng
-  mục lạ khi dự đoán (app demo).
-- **Nhị phân** → passthrough.
+  chiều do `district` / `city` cardinality cao, đồng thời xử lý được hạng mục lạ khi dự đoán
+  (app demo).
+- **Nhị phân** (0/1 hoặc NaN sau mask MNAR) → mô hình cây: passthrough (XGBoost/RF xử lý NaN
+  native, học riêng nhánh "không khai báo"); mô hình tuyến tính: `SimpleImputer(mean)` vì
+  OLS/Ridge/LASSO không nhận NaN (mean = tỷ lệ quan sát được — trung hòa, không thiên lệch dấu).
 
 **Biến mục tiêu giữ NGUYÊN `price` (triệu/tháng):** EDA 5.2 cho thấy `price` lệch phải và gợi ý
 thử `log(price)`. Tuy nhiên, các mức giá cao đều có **nguyên nhân thực** (vị trí trung tâm, căn
@@ -199,13 +217,13 @@ RMSE/R² **và** sai số phân khúc giá cao đều **tệ hơn** ⇒ cả 5 m
 `price` gốc**, mọi chỉ số tự nhiên cùng đơn vị triệu/tháng nên so sánh công bằng.
 """))
 cells.append(code(r"""
-def build_prep():
-    "ColumnTransformer mới (chưa fit) — mỗi mô hình giữ bản sao tiền xử lý riêng."
-    return F.build_preprocessor(COL_GROUPS, min_frequency=100)
+def build_prep(impute_bin=False):
+    "ColumnTransformer mới (chưa fit). impute_bin=True cho mô hình tuyến tính (không nhận NaN)."
+    return F.build_preprocessor(COL_GROUPS, min_frequency=100, impute_bin=impute_bin)
 
 def make_linear(step_name, estimator):
-    "Pipeline tuyến tính: prep -> estimator, học trực tiếp trên price gốc (xem 11.2)."
-    return Pipeline([("prep", build_prep()), (step_name, estimator)])
+    "Pipeline tuyến tính: prep (impute NaN cờ tiện ích) -> estimator, học trên price gốc (xem 11.2)."
+    return Pipeline([("prep", build_prep(impute_bin=True)), (step_name, estimator)])
 
 def evaluate(model, Xe, ye):
     "Trả về MAE / RMSE / R² (đơn vị: triệu VNĐ/tháng)."
@@ -214,7 +232,7 @@ def evaluate(model, Xe, ye):
             "RMSE": root_mean_squared_error(ye, pred),
             "R2": r2_score(ye, pred)}
 
-# Minh họa: One-Hot biến 11 cột danh mục/số thành bao nhiêu chiều?
+# Minh họa: One-Hot biến các cột danh mục/số thành bao nhiêu chiều?
 _demo = build_prep().fit(X_train)
 enc_names = list(_demo.get_feature_names_out())
 print(f"Sau tiền xử lý: {X_train.shape[1]} cột → {len(enc_names)} chiều đặc trưng.")
@@ -330,17 +348,25 @@ Quy trình 2 bước:
 2. **Huấn luyện lại** cấu hình tốt nhất với `early_stopping_rounds=50` trên tập Validation: cho
    `n_estimators=2000` làm trần, XGBoost tự dừng khi val-RMSE ngừng cải thiện ⇒ chống overfitting
    và tiết kiệm cây. *(XGBoost 3.x: `early_stopping_rounds` đặt ở constructor, `eval_set` ở `fit`.)*
+
+**Ràng buộc đơn điệu (`monotone_constraints`) cho 12 cờ tiện ích:** trong dữ liệu, tin giá rẻ
+*quảng cáo* nhiều tiện ích còn căn hộ đắt thường *không liệt kê* — tương quan hành vi đăng tin,
+không phải giá trị thật của tiện ích. Không ràng buộc, mô hình học "tick máy lạnh ⇒ giảm giá" —
+phi lý với người dùng app. Ràng buộc +1 ép hiệu ứng tiện ích **không âm**; nhánh NaN ("không khai
+báo") vẫn tự do nên mô hình không mất thông tin nguồn-khai-báo.
 """))
 cells.append(code(r"""
 xgb_dist = {"xgb__n_estimators": [100, 300, 500],
-            "xgb__learning_rate": [0.01, 0.05, 0.1, 0.3],
-            "xgb__max_depth": [3, 5, 7],
+            "xgb__learning_rate": [0.01, 0.03, 0.05, 0.1],
+            "xgb__max_depth": [5, 7, 9, 10],     # mô hình RÀNG BUỘC ưa cây sâu hơn (probe 2026-06)
             "xgb__subsample": [0.6, 0.8, 1.0],
             "xgb__colsample_bytree": [0.6, 0.8, 1.0],
             "xgb__reg_alpha": [0, 0.1, 1],
             "xgb__reg_lambda": [1, 5, 10]}
+MONO = F.monotone_constraints(COL_GROUPS)    # {12 cờ tiện ích: +1} — theo TÊN cột (prep xuất pandas)
 xgb_pipe = Pipeline([("prep", build_prep()),
-                     ("xgb", XGBRegressor(tree_method="hist", random_state=RANDOM_STATE, n_jobs=1))])
+                     ("xgb", XGBRegressor(tree_method="hist", random_state=RANDOM_STATE,
+                                          n_jobs=1, monotone_constraints=MONO))])
 t0 = time.time()
 xgb_search = RandomizedSearchCV(xgb_pipe, xgb_dist, n_iter=XGB_N_ITER, cv=CV_TREE,
                                 scoring="neg_root_mean_squared_error",
@@ -359,6 +385,7 @@ Xval_t = prep_fit.transform(X_val)
 xgb_final = XGBRegressor(
     tree_method="hist", random_state=RANDOM_STATE, n_jobs=-1,
     early_stopping_rounds=50, n_estimators=2000,        # trần lớn; early stop tự cắt
+    monotone_constraints=MONO,                          # giữ ràng buộc tiện ích không âm
     learning_rate=best["learning_rate"], max_depth=best["max_depth"],
     subsample=best["subsample"], colsample_bytree=best["colsample_bytree"],
     reg_alpha=best["reg_alpha"], reg_lambda=best["reg_lambda"])
@@ -373,36 +400,44 @@ print("XGBoost (early-stop) — Validation:", {k: round(v, 4) for k, v in result
 """.strip()))
 
 # ---- 9. Comparison ---------------------------------------------------------
-cells.append(md(r"""## 9. So sánh trên Validation & chọn mô hình tốt nhất
+cells.append(md(r"""## 9. So sánh trên Validation & chọn mô hình triển khai
 
-Chọn theo **2 tiêu chí**, tất cả tính trên cùng tập Validation (đơn vị triệu VNĐ/tháng):
+Báo cáo theo **2 góc nhìn**, tất cả tính trên cùng tập Validation (đơn vị triệu VNĐ/tháng):
 
 1. **Chính xác nhất:** RMSE thấp nhất (phạt nặng lỗi lớn) kết hợp R² cao nhất.
-2. **Mô hình triển khai (tie-break theo nguyên lý tiết kiệm / Occam):** Random Forest và XGBoost
-   chênh nhau **không đáng kể (< 1% RMSE — trong khoảng nhiễu của CV)**, nên khi "hòa" ta ưu tiên
-   mô hình **gọn & dễ triển khai hơn** cho app demo: **XGBoost** nhỏ hơn ~**40 lần** (≈1 MB so với
-   ≈100 MB của RF — RF còn vượt giới hạn 100 MB của GitHub), suy luận nhanh, có sẵn early stopping.
-   ⇒ `model_best.pkl` lưu **XGBoost**.
+2. **Mô hình triển khai — chỉ số TỐT là cần, nhưng chưa đủ:** ngoài độ chính xác, app demo còn
+   đòi hỏi *tick thêm tiện ích không được làm giảm giá dự báo* (chặn confound "tin rẻ quảng cáo
+   tiện ích, căn hộ đắt không liệt kê" — xem mục 1 & 8), và mô hình phải **commit được lên GitHub
+   (<100 MB) + suy luận nhanh** trong app. Cân nhắc:
+   - **Random Forest** thường đạt RMSE thô thấp nhất, nhưng nặng **≈100 MB** (vượt giới hạn GitHub,
+     nạp/dự đoán chậm trong app) — một phần độ chính xác đó đến từ *tự do khai thác tương quan
+     phi nhân quả* mà ta muốn loại.
+   - **XGBoost** ≈2 MB, có early stopping, và (như RF trong sklearn ≥1.4) hỗ trợ
+     **`monotone_constraints`** — ta áp ràng buộc +1 cho 12 cờ tiện ích lên đúng mô hình triển khai.
+   ⇒ `model_best.pkl` lưu **XGBoost (có ràng buộc đơn điệu)**: gọn, đúng hành vi cho app;
+   RMSE của các mô hình không ràng buộc vẫn được báo cáo đầy đủ để so sánh trung thực.
 """))
 cells.append(code(r"""
 cmp = (pd.DataFrame(results).T[["MAE", "RMSE", "R2"]]
        .sort_values("RMSE").rename(columns={"R2": "R²"}))
 MOST_ACCURATE = cmp.index[0]                      # RMSE thấp nhất (chính xác nhất)
 
-# Tie-break TRIỂN KHAI (Occam): trong các mô hình cách mô hình tốt nhất < 1% RMSE (≈ nhiễu CV),
-# ưu tiên loại GỌN & dễ triển khai hơn cho app demo + commit GitHub (<100 MB).
-DEPLOY_PREF = ["XGBoost", "Random Forest", "Ridge", "LASSO", "OLS"]   # nhẹ/triển-khai-tốt trước
-contenders = cmp.index[cmp["RMSE"] <= cmp["RMSE"].min() * 1.01].tolist()
-BEST_NAME = min(contenders, key=lambda m: DEPLOY_PREF.index(m))        # mô hình sẽ LƯU & triển khai
+# TRIỂN KHAI: XGBoost — gọn (≈2 MB vs RF ≈100 MB, commit GitHub + app nhanh), có early stopping,
+# và mang RÀNG BUỘC ĐƠN ĐIỆU (Quyết định D) bảo đảm hiệu ứng tiện ích không âm. RMSE thô của RF
+# có thể thấp hơn nhưng phần chênh đến từ khai thác tương quan hành-vi-đăng-tin phi nhân quả.
+BEST_NAME = "XGBoost"
 
 display(cmp.style.format("{:.4f}")
         .background_gradient(subset=["RMSE", "MAE"], cmap="crest_r")
         .background_gradient(subset=["R²"], cmap="crest")
         .set_caption("Hiệu năng trên Validation (sắp xếp theo RMSE tăng dần)"))
 print(f"📈 Chính xác nhất (RMSE thấp nhất): {MOST_ACCURATE}")
-print(f"🏆 Chọn TRIỂN KHAI (tie-break tiết kiệm, lưu model_best.pkl): {BEST_NAME}")
+print(f"🏆 TRIỂN KHAI (lưu model_best.pkl): {BEST_NAME} — gọn (≈2 MB), early stopping, và mang")
+print("   ràng buộc đơn điệu (Quyết định D) bảo đảm 'tick tiện ích không giảm giá'.")
 if BEST_NAME != MOST_ACCURATE:
-    print(f"   ↳ {MOST_ACCURATE} và {BEST_NAME} chênh < 1% RMSE (trong nhiễu) → ưu tiên {BEST_NAME} vì gọn & dễ triển khai.")
+    gap = (cmp.loc[BEST_NAME, 'RMSE'] - cmp['RMSE'].min()) / cmp['RMSE'].min() * 100
+    print(f"   {MOST_ACCURATE} (không ràng buộc) RMSE thấp hơn {gap:.1f}% — phần chênh đến từ việc")
+    print("   tự do khai thác tương quan hành-vi-đăng-tin mà mô hình triển khai cố ý từ chối.")
 
 # Biểu đồ cột so sánh 3 chỉ số
 fig, axes = plt.subplots(1, 3, figsize=(16, 4.8))
@@ -440,11 +475,14 @@ rf_names = rf_best.named_steps["prep"].get_feature_names_out()
 rf_imp = (pd.Series(rf_best.named_steps["rf"].feature_importances_, index=rf_names)
           .sort_values(ascending=False).head(10))
 
-# XGBoost gain (ánh xạ f0,f1,... -> tên đặc trưng)
+# XGBoost gain. Preprocessor xuất pandas (set_output) nên booster lưu TÊN cột thật
+# ('area', 'feature_*'…) thay vì 'f0/f1'. Xử lý cả 2 kiểu key để bền vững.
 booster = models["XGBoost"].named_steps["xgb"].get_booster()
-xgb_names = models["XGBoost"].named_steps["prep"].get_feature_names_out()
+xgb_names = list(models["XGBoost"].named_steps["prep"].get_feature_names_out())
 gain = booster.get_score(importance_type="gain")
-xgb_imp = (pd.Series({xgb_names[int(k[1:])]: v for k, v in gain.items()})
+def _featname(k):
+    return xgb_names[int(k[1:])] if (k[0] == "f" and k[1:].isdigit()) else k
+xgb_imp = (pd.Series({_featname(k): v for k, v in gain.items()})
            .sort_values(ascending=False).head(10))
 
 fig, axes = plt.subplots(1, 2, figsize=(16, 6))
@@ -509,6 +547,8 @@ thay đổi **đúng một yếu tố** và giữ nguyên mọi thứ còn lại
   thể) — như vậy chênh lệch quan sát được là do *yếu tố đang thử*, không phải do may rủi tuning.
 - Dùng 3 mô hình đại diện: **OLS** (tuyến tính không phạt), **Ridge** (tuyến tính có phạt —
   nhạy với chuẩn hóa), **XGBoost** (cây — mô hình triển khai).
+- XGBoost trong ablation chạy **không ràng buộc đơn điệu** để cô lập đúng yếu tố đang thử
+  (V3-PCA cũng không thể ràng buộc: sau PCA không còn cột tiện ích riêng).
 """))
 cells.append(code(r"""
 # Cấu hình chung cho cả 3 thí nghiệm đối sánh
@@ -542,34 +582,41 @@ yếu tố "đặc trưng" — chuyện log mục tiêu để dành thí nghiệ
 
 | Biến thể | Mô tả |
 |---|---|
-| **V0 — Thô (raw)** | Chỉ 15 cột dùng được *ngay* không qua xử lý: `area`, `bedrooms`, `bathrooms` + 12 cờ tiện ích. `full_address` là chuỗi tự do nên **không thể** đưa thẳng vào mô hình ⇒ biến thể thô **mất toàn bộ thông tin khu vực** |
-| **V1 — FE, không chuẩn hóa** | Thêm `city`/`district` (One-Hot) + `n_features`, nhưng **bỏ** `StandardScaler` |
+| **V0 — Thô (raw)** | Chỉ các cột dùng được *ngay* không qua xử lý (kể cả **chưa mask MNAR**): `area`, `bedrooms`, `bathrooms` + 12 cờ tiện ích. `full_address` là chuỗi tự do nên **không thể** đưa thẳng vào mô hình ⇒ biến thể thô **mất toàn bộ thông tin khu vực** |
+| **V1 — FE, không chuẩn hóa** | Thêm `city`/`district` (One-Hot) + **mask MNAR** cờ tiện ích, nhưng **bỏ** `StandardScaler` |
 | **V2 — FE + chuẩn hóa** | Pipeline Bước 4 (mục 3) — FE đầy đủ + `StandardScaler` cho biến số |
 | **V3 — FE + chuẩn hóa + PCA** | Như V2, thêm `PCA` giữ **95% phương sai** sau tiền xử lý |
 
-> **Lưu ý của giảng viên:** với bộ dữ liệu chỉ ~14–20 cột gốc (ở đây: 18 cột đầu vào), FE có thể
-> không tạo khác biệt lớn — nhưng vẫn phải **làm thực nghiệm để đối sánh**. Điểm đặc thù của bài
-> này: FE không "đẻ thêm" biến mới từ biến số, mà chủ yếu **mở khóa** thông tin khu vực đang bị
-> kẹt trong chuỗi `full_address` — đúng trọng tâm đề tài *"theo khu vực"*.
+> **Lưu ý của giảng viên:** với bộ dữ liệu chỉ ~14–20 cột gốc, FE có thể không tạo khác biệt lớn —
+> nhưng vẫn phải **làm thực nghiệm để đối sánh**. Điểm đặc thù của bài này: FE không "đẻ thêm"
+> biến mới từ biến số, mà chủ yếu **mở khóa** thông tin khu vực đang bị kẹt trong chuỗi
+> `full_address` — đúng trọng tâm đề tài *"theo khu vực"*.
 """))
 cells.append(code(r"""
 RAW_COLS = ["area", "bedrooms", "bathrooms"] + COL_GROUPS["bin"]   # 15 cột "thô" dùng được ngay
+# V0 "thô" = TRƯỚC mọi xử lý của Bước 4, kể cả mask MNAR (mask là một phần của FE)
+X0, _, _ = F.build_Xy(rental, mask_mnar=False)
+X0_train, X0_val = X0.loc[X_train.index, RAW_COLS], X0.loc[X_val.index, RAW_COLS]
 
-def build_prep_noscale():
+def build_prep_noscale(impute_bin=False):
     "Như build_prep() nhưng KHÔNG chuẩn hóa biến số (num: passthrough)."
+    from sklearn.impute import SimpleImputer
     return ColumnTransformer(
         transformers=[
             ("num", "passthrough", COL_GROUPS["num"]),
             ("cat", OneHotEncoder(handle_unknown="infrequent_if_exist",
                                   min_frequency=100, sparse_output=False), COL_GROUPS["cat"]),
-            ("bin", "passthrough", COL_GROUPS["bin"]),
+            ("bin", SimpleImputer(strategy="mean") if impute_bin else "passthrough",
+             COL_GROUPS["bin"]),
         ], remainder="drop", verbose_feature_names_out=False)
 
+# wrap(m, lin): lin=True (OLS/Ridge) → impute NaN cờ tiện ích; XGBoost → passthrough NaN.
+# Riêng V3-PCA: LUÔN impute (PCA không nhận NaN với mọi mô hình).
 VARIANTS = {
-    "V0 Thô (không FE)":      lambda m: Pipeline([("m", m)]),
-    "V1 FE, không chuẩn hóa": lambda m: Pipeline([("prep", build_prep_noscale()), ("m", m)]),
-    "V2 FE + chuẩn hóa":      lambda m: Pipeline([("prep", build_prep()), ("m", m)]),
-    "V3 FE + PCA(95%)":       lambda m: Pipeline([("prep", build_prep()),
+    "V0 Thô (không FE)":      lambda m, lin: Pipeline([("m", m)]),
+    "V1 FE, không chuẩn hóa": lambda m, lin: Pipeline([("prep", build_prep_noscale(lin)), ("m", m)]),
+    "V2 FE + chuẩn hóa":      lambda m, lin: Pipeline([("prep", build_prep(impute_bin=lin)), ("m", m)]),
+    "V3 FE + PCA(95%)":       lambda m, lin: Pipeline([("prep", build_prep(impute_bin=True)),
                                                   ("pca", PCA(n_components=0.95, random_state=RANDOM_STATE)),
                                                   ("m", m)]),
 }
@@ -577,10 +624,10 @@ VARIANTS = {
 abl_fe = {}
 t0 = time.time()
 for vname, wrap in VARIANTS.items():
-    Xtr = X_train[RAW_COLS] if vname.startswith("V0") else X_train
-    Xva = X_val[RAW_COLS]   if vname.startswith("V0") else X_val
+    Xtr = X0_train if vname.startswith("V0") else X_train
+    Xva = X0_val   if vname.startswith("V0") else X_val
     for mname, mk in ABL_MODELS.items():
-        pipe = wrap(mk()).fit(Xtr, y_train)
+        pipe = wrap(mk(), mname != "XGBoost").fit(Xtr, y_train)
         abl_fe[(vname, mname)] = evaluate(pipe, Xva, y_val)
         if vname.startswith("V3") and mname == "XGBoost":
             n_pca = pipe.named_steps["pca"].n_components_
@@ -652,7 +699,7 @@ abl_log = {}
 t0 = time.time()
 for mname, mk in ABL_MODELS.items():
     for tname in ["price (gốc)", "log1p(price)"]:
-        core = Pipeline([("prep", build_prep()), ("m", mk())])
+        core = Pipeline([("prep", build_prep(impute_bin=(mname != "XGBoost"))), ("m", mk())])
         model = (TransformedTargetRegressor(regressor=core, func=np.log1p, inverse_func=np.expm1)
                  if tname.startswith("log") else core)
         model.fit(X_train, y_train)
@@ -715,11 +762,11 @@ trọ/căn hộ bình dân* của đề tài). Giảng viên lưu ý: *"nếu m�
 1.000 tỷ thì nên bỏ, vì giữ lại sẽ làm sai lệch mô hình"* — thí nghiệm này **hậu kiểm** quyết
 định đó bằng số liệu.
 
-**Thiết kế công bằng:** dùng bản dữ liệu **trước khi lọc** (`rental_data.csv`), chia
-Train/Validation cùng `random_state`; hai mô hình XGBoost (siêu tham số đóng băng) chỉ khác nhau
-ở **tập Train**: (a) giữ nguyên outlier, (b) đã lọc outlier. Cả hai được chấm trên **cùng một
-tập Validation đã lọc về vùng giá mục tiêu** (≤17 triệu, ≤180 m² — vùng mà bài toán & app demo
-nhắm tới), nên chênh lệch chỉ đến từ việc *Train có hay không có outlier*.
+**Thiết kế công bằng:** dùng bản dữ liệu **trước khi lọc** (`rental_data.csv` — sản phẩm trung
+gian Bước 2 v2), chia Train/Validation cùng `random_state`; hai mô hình XGBoost (siêu tham số
+đóng băng) chỉ khác nhau ở **tập Train**: (a) giữ nguyên outlier, (b) đã lọc outlier. Cả hai được
+chấm trên **cùng một tập Validation đã lọc về vùng giá mục tiêu** (≤17 triệu, ≤180 m² — vùng mà
+bài toán & app demo nhắm tới), nên chênh lệch chỉ đến từ việc *Train có hay không có outlier*.
 """))
 cells.append(code(r"""
 raw_full = pd.read_csv(DATA / "rental_data.csv", low_memory=False)
@@ -791,8 +838,9 @@ cells.append(md(r"""## 12. Lưu mô hình & metadata
 Lưu **toàn bộ pipeline** (tiền xử lý + mô hình) của từng thuật toán bằng `joblib` (nén `compress=3`),
 đánh dấu mô hình tốt nhất là `model_best.pkl`, kèm `metadata.json` (danh sách cột, siêu tham số,
 chỉ số Validation, phiên bản thư viện) để **app demo Bước 6** nạp lại và dự đoán nhất quán.
+Tất cả ghi vào `v2/models/`.
 
-> ⚠️ `model_random_forest.pkl` rất lớn (500 cây × depth 20 ≈ 95 MB sau nén) → **được `.gitignore`**
+> ⚠️ `model_random_forest.pkl` rất lớn (500 cây × depth lớn ≈ 95 MB sau nén) → nên **`.gitignore`**
 > để không vượt giới hạn 100 MB của GitHub. Mô hình này **tái tạo được** từ `best_params` trong
 > `metadata.json` (chỉ 1 lần `fit`). `model_best.pkl` (XGBoost ≈ 1 MB) vẫn được commit bình thường.
 """))
@@ -812,14 +860,19 @@ best_params = {
 metadata = {
     "task": "regression - du bao gia thue (trieu VND/thang)",
     "target": F.TARGET,
+    "data_source": "v2/data/processed/rental_data_clean.csv (Buoc 2 - notebook 02 v2)",
     "best_model": BEST_NAME,                 # mo hinh duoc LUU/trien khai (model_best.pkl)
-    "most_accurate_val": MOST_ACCURATE,      # RMSE thap nhat; co the != best_model do tie-break tiet kiem
+    "most_accurate_val": MOST_ACCURATE,      # RMSE thap nhat; co the != best_model (XGBoost rang buoc, gon)
     "feature_columns": {"num": COL_GROUPS["num"], "cat": COL_GROUPS["cat"], "bin": COL_GROUPS["bin"]},
     "split": {"train": len(X_train), "val": len(X_val), "test": len(X_test), "scheme": "70/15/15"},
     "validation_metrics": {k: {m: round(float(val), 4) for m, val in v.items()} for k, v in results.items()},
     "best_params": best_params,
     "versions": {"scikit_learn": sklearn.__version__, "xgboost": xgboost.__version__},
-    "excluded_features": ["source", "price_per_m2", "log_price", "posted_date", "description"],
+    "excluded_features": ["source", "n_features", "price_per_m2", "log_price", "posted_date", "description"],
+    "mnar_fix": {     # co tien ich che tac -> NaN; XGBoost rang buoc don dieu (kiem toan Buoc 2 v2)
+        "observed_flags_by_source": {k: len(v) for k, v in F.OBSERVED_FLAGS.items()},
+        "monotone_constraints": "12 co feature_* : +1 (khong am khi tick tien ich)",
+    },
     "ablation": {   # muc 11 — thuc nghiem doi sanh theo gop y giang vien (RMSE/R2 tren Validation)
         "fe_pca_rmse": {f"{v} | {m}": round(float(r["RMSE"]), 4) for (v, m), r in abl_fe.items()},
         "log_target": {f"{m} | {t}": {kk: round(float(vv), 4) for kk, vv in r.items()}
@@ -828,8 +881,10 @@ metadata = {
                          for k, r in abl_out.items()},
     },
     "note": "source CO Y bi loai (artifact thu thap, khong phai yeu to dinh gia). "
-            "Test set chua dung — danh cho Buoc 5. FE dung script/model/features.py. "
-            "Muc 11: ablation FE/PCA, log-target, outlier theo gop y giang vien.",
+            "n_features bi loai + 7/12 co tien ich che tac bi mask NaN theo nguon (MNAR, xem "
+            "features.OBSERVED_FLAGS; kiem toan o Buoc 2 - notebook 02 v2); XGBoost them "
+            "monotone_constraints cho 12 co. Test set chua dung — danh cho Buoc 5. "
+            "FE dung v2/script/model/features.py. Muc 11: ablation FE/PCA, log-target, outlier.",
 }
 (MODELS / "metadata.json").write_text(
     json.dumps(metadata, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
@@ -850,32 +905,32 @@ cells.append(md(r"""## 13. Tổng kết Bước 4 & bàn giao Bước 5
 4. **Feature Importance** (RF MDI + XGBoost gain) — đối chiếu, kiểm chứng phát hiện EDA.
 5. **Thực nghiệm đối sánh (mục 11, theo góp ý giảng viên)**: thô↔FE↔FE+PCA (kèm có/không
    chuẩn hóa), `price`↔`log(price)`, có↔không lọc outlier.
-6. **Lưu** mô hình triển khai `models/model_best.pkl` + `metadata.json` (kèm kết quả ablation).
+6. **Lưu** mô hình triển khai `v2/models/model_best.pkl` + `metadata.json` (kèm kết quả ablation).
 
 **Khám phá chính:**
-- **Random Forest chính xác nhất** theo RMSE nhưng chỉ hơn XGBoost **< 1% (trong nhiễu CV)**; chọn
-  **XGBoost để triển khai** (nhỏ hơn ~40×, ≈1 MB vs ≈100 MB, có early stopping, suy luận nhanh) —
-  tie-break theo nguyên lý tiết kiệm, hợp lý cho app demo và giới hạn 100 MB của GitHub.
+- **Mô hình triển khai = XGBoost có ràng buộc đơn điệu** (Quyết định D — bảo đảm *"tick tiện ích
+  không làm giảm giá"*). Random Forest chạy không ràng buộc có thể đạt RMSE thô thấp hơn, nhưng
+  phần chênh đến từ khai thác tương quan hành-vi-đăng-tin phi nhân quả, và RF nặng ≈100 MB (vượt
+  giới hạn GitHub) so với ≈2 MB của XGBoost ⇒ XGBoost vừa gọn vừa đúng hành vi cho app demo.
 - Mô hình **cây (Random Forest / XGBoost)** vượt trội mô hình tuyến tính ⇒ quan hệ giá↔đặc trưng
   **phi tuyến** và có **tương tác khu vực × diện tích** mạnh (khớp PCA/heatmap ở EDA).
-- **Cố ý loại `source`** (artifact thu thập dữ liệu, không phải yếu tố định giá thực). Hệ quả:
-  R² giảm nhẹ (~0.70 → ~0.63) vì `source` từng gánh nhiều phương sai, NHƯNG mô hình **tổng quát
-  và trung thực hơn** — dự báo dựa trên đặc điểm BĐS thật, đúng kịch bản app demo (không có input nguồn).
-- Sau khi bỏ `source`, đặc trưng quan trọng nhất là **khu vực** (`city`/`district`), **diện tích**
-  (`area`) và **tiện ích** (bảo vệ 24/24, máy lạnh, nước nóng…) — diễn giải rõ ràng, đúng nghiệp vụ.
+- **Cố ý loại `source`** (artifact thu thập, không phải yếu tố định giá thực) và **mask MNAR**
+  7/12 cờ tiện ích chế tác + bỏ `n_features` (kiểm toán ở Bước 2 — notebook 02 v2). Chỉ số có thể
+  thấp hơn bản chưa làm sạch, NHƯNG mô hình **tổng quát và trung thực hơn** — dự báo từ đặc điểm
+  BĐS thật, đúng kịch bản app demo.
+- Đặc trưng quan trọng nhất là **khu vực** (`city`/`district`), **diện tích** (`area`) — diễn
+  giải rõ ràng, đúng nghiệp vụ.
 - LASSO loại bớt các chiều One-Hot hiếm ⇒ xác nhận nhiều quận/tiện ích đóng góp biên nhỏ.
 
 **Kết luận từ thực nghiệm đối sánh (mục 11 — số liệu cụ thể in trong từng thí nghiệm):**
 - **FE > thô:** tách `city`/`district` từ `full_address` là nguồn cải thiện chính — dữ liệu thô
-  mất toàn bộ tín hiệu khu vực. **PCA không cải thiện thêm** trên dữ liệu này (số chiều gốc
-  18 cột, đúng vùng 14–20 cột giảng viên dự đoán FE/PCA ít tác dụng "đẻ thêm" biến — giá trị
-  của FE ở đây là *mở khóa* thông tin địa chỉ, không phải tăng chiều).
+  mất toàn bộ tín hiệu khu vực. **PCA không cải thiện thêm** trên dữ liệu này (giá trị của FE ở
+  đây là *mở khóa* thông tin địa chỉ, không phải tăng chiều).
 - **Chuẩn hóa:** không đổi kết quả với OLS/XGBoost (bất biến co giãn) nhưng cần cho mô hình
   có phạt (Ridge/LASSO) và cho PCA — giữ trong pipeline như khuyến nghị của giảng viên.
 - **Log mục tiêu:** KHÔNG tăng hiệu năng — chỉ cải thiện MAE vài %, còn RMSE/R² tệ hơn và
   **bias âm sâu hơn ở phân khúc giá cao** (dự đoán hụt — đúng lo ngại *underweight* của giảng
-  viên) ⇒ **cả 5 mô hình học trên `price` gốc**; gợi ý log từ EDA bị thực nghiệm bác bỏ —
-  minh chứng cho giá trị của việc đối sánh.
+  viên) ⇒ **cả 5 mô hình học trên `price` gốc**; gợi ý log từ EDA bị thực nghiệm bác bỏ.
 - **Lọc outlier:** huấn luyện kèm outlier (giá tới hàng tỷ/tháng) làm hiệu năng trên vùng giá
   mục tiêu xấu đi rõ rệt ⇒ xác nhận quyết định lọc `price≤17`, `area≤180` ở Bước 2.
 
@@ -883,7 +938,7 @@ cells.append(md(r"""## 13. Tổng kết Bước 4 & bàn giao Bước 5
 - Chạy **10-fold Cross-Validation** trên Train để báo cáo độ ổn định (mean ± std).
 - **Đánh giá cuối cùng 1 lần trên tập Test** (Model Assessment): MAE / RMSE / R².
 - Vẽ **Actual vs Predicted** & **Residual plot** trên Test; hoàn thiện **bảng so sánh** mô hình.
-- Mô hình & metadata đã sẵn trong `models/` để Bước 5 nạp lại, không cần huấn luyện lại.
+- Mô hình & metadata đã sẵn trong `v2/models/` để Bước 5 nạp lại, không cần huấn luyện lại.
 """))
 
 # ============================================================================
@@ -891,5 +946,5 @@ nb = new_notebook(cells=cells)
 nb.metadata["kernelspec"] = {"name": "btl_khdl", "display_name": "Python (btl_khdl)", "language": "python"}
 nb.metadata["language_info"] = {"name": "python"}
 NB_PATH.parent.mkdir(parents=True, exist_ok=True)
-nbf.write(nb, NB_PATH)
-print("Đã ghi notebook:", NB_PATH)
+nbf.write(nb, str(NB_PATH))
+print("Đã ghi notebook (chưa thực thi):", NB_PATH)

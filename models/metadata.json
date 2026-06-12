@@ -1,14 +1,14 @@
 {
   "task": "regression - du bao gia thue (trieu VND/thang)",
   "target": "price",
+  "data_source": "v2/data/processed/rental_data_clean.csv (Buoc 2 - notebook 02 v2)",
   "best_model": "XGBoost",
   "most_accurate_val": "Random Forest",
   "feature_columns": {
     "num": [
       "area",
       "bedrooms",
-      "bathrooms",
-      "n_features"
+      "bathrooms"
     ],
     "cat": [
       "city",
@@ -30,36 +30,36 @@
     ]
   },
   "split": {
-    "train": 93191,
-    "val": 19906,
-    "test": 19959,
+    "train": 93563,
+    "val": 19985,
+    "test": 20038,
     "scheme": "70/15/15"
   },
   "validation_metrics": {
     "OLS": {
-      "MAE": 1.9539,
-      "RMSE": 2.5634,
-      "R2": 0.2004
+      "MAE": 1.9633,
+      "RMSE": 2.5862,
+      "R2": 0.1947
     },
     "Ridge": {
-      "MAE": 1.9537,
-      "RMSE": 2.5633,
-      "R2": 0.2004
+      "MAE": 1.9632,
+      "RMSE": 2.5862,
+      "R2": 0.1947
     },
     "LASSO": {
-      "MAE": 1.9557,
-      "RMSE": 2.5668,
-      "R2": 0.1983
+      "MAE": 1.9657,
+      "RMSE": 2.5898,
+      "R2": 0.1924
     },
     "Random Forest": {
-      "MAE": 1.0409,
-      "RMSE": 1.747,
-      "R2": 0.6286
+      "MAE": 1.0135,
+      "RMSE": 1.6775,
+      "R2": 0.6612
     },
     "XGBoost": {
-      "MAE": 1.1108,
-      "RMSE": 1.755,
-      "R2": 0.6252
+      "MAE": 1.2556,
+      "RMSE": 1.8943,
+      "R2": 0.568
     }
   },
   "best_params": {
@@ -70,19 +70,19 @@
       "lasso__alpha": 0.001
     },
     "Random Forest": {
-      "rf__n_estimators": 500,
-      "rf__min_samples_split": 10,
-      "rf__max_depth": 20
+      "rf__n_estimators": 200,
+      "rf__min_samples_split": 5,
+      "rf__max_depth": 10
     },
     "XGBoost": {
-      "xgb__subsample": 0.8,
+      "xgb__subsample": 0.6,
       "xgb__reg_lambda": 10,
-      "xgb__reg_alpha": 0,
-      "xgb__n_estimators": 500,
-      "xgb__max_depth": 7,
+      "xgb__reg_alpha": 1,
+      "xgb__n_estimators": 100,
+      "xgb__max_depth": 10,
       "xgb__learning_rate": 0.05,
-      "xgb__colsample_bytree": 0.6,
-      "early_stop_best_iteration": 948
+      "xgb__colsample_bytree": 1.0,
+      "early_stop_best_iteration": 126
     }
   },
   "versions": {
@@ -91,148 +91,164 @@
   },
   "excluded_features": [
     "source",
+    "n_features",
     "price_per_m2",
     "log_price",
     "posted_date",
     "description"
   ],
+  "mnar_fix": {
+    "observed_flags_by_source": {
+      "chothuephongtro": 5,
+      "nhatot": 5,
+      "facebook": 5,
+      "github_housing": 5,
+      "lozido": 10,
+      "phongtro123": 11,
+      "chothuenhadattoanvn": 0,
+      "github_hcm": 0,
+      "github_hn": 0,
+      "github_dn": 0
+    },
+    "monotone_constraints": "12 co feature_* : +1 (khong am khi tick tien ich)"
+  },
   "ablation": {
     "fe_pca_rmse": {
-      "V0 Thô (không FE) | OLS": 2.6521,
-      "V0 Thô (không FE) | Ridge": 2.6521,
-      "V0 Thô (không FE) | XGBoost": 1.8366,
-      "V1 FE, không chuẩn hóa | OLS": 2.5634,
-      "V1 FE, không chuẩn hóa | Ridge": 2.5633,
-      "V1 FE, không chuẩn hóa | XGBoost": 1.755,
-      "V2 FE + chuẩn hóa | OLS": 2.5634,
-      "V2 FE + chuẩn hóa | Ridge": 2.5633,
-      "V2 FE + chuẩn hóa | XGBoost": 1.755,
-      "V3 FE + PCA(95%) | OLS": 2.601,
-      "V3 FE + PCA(95%) | Ridge": 2.601,
-      "V3 FE + PCA(95%) | XGBoost": 1.814
+      "V0 Thô (không FE) | OLS": 2.6807,
+      "V0 Thô (không FE) | Ridge": 2.6807,
+      "V0 Thô (không FE) | XGBoost": 1.8299,
+      "V1 FE, không chuẩn hóa | OLS": 2.5862,
+      "V1 FE, không chuẩn hóa | Ridge": 2.5862,
+      "V1 FE, không chuẩn hóa | XGBoost": 1.657,
+      "V2 FE + chuẩn hóa | OLS": 2.5862,
+      "V2 FE + chuẩn hóa | Ridge": 2.5862,
+      "V2 FE + chuẩn hóa | XGBoost": 1.657,
+      "V3 FE + PCA(95%) | OLS": 2.6218,
+      "V3 FE + PCA(95%) | Ridge": 2.6218,
+      "V3 FE + PCA(95%) | XGBoost": 1.6845
     },
     "log_target": {
       "OLS | price (gốc)": {
-        "MAE": 1.9539,
-        "RMSE": 2.5634,
-        "R²": 0.2004,
-        "RMSE giá cao": 5.8828,
-        "Bias giá cao": -5.5851
+        "MAE": 1.9633,
+        "RMSE": 2.5862,
+        "R²": 0.1947,
+        "RMSE giá cao": 5.9454,
+        "Bias giá cao": -5.6135
       },
       "OLS | log1p(price)": {
-        "MAE": 1.8703,
-        "RMSE": 2.6088,
-        "R²": 0.1718,
-        "RMSE giá cao": 6.5197,
-        "Bias giá cao": -6.2438
+        "MAE": 1.8819,
+        "RMSE": 2.6358,
+        "R²": 0.1635,
+        "RMSE giá cao": 6.6209,
+        "Bias giá cao": -6.3072
       },
       "Ridge | price (gốc)": {
-        "MAE": 1.9537,
-        "RMSE": 2.5633,
-        "R²": 0.2004,
-        "RMSE giá cao": 5.8836,
-        "Bias giá cao": -5.5858
+        "MAE": 1.9632,
+        "RMSE": 2.5862,
+        "R²": 0.1947,
+        "RMSE giá cao": 5.9462,
+        "Bias giá cao": -5.6143
       },
       "Ridge | log1p(price)": {
-        "MAE": 1.8703,
-        "RMSE": 2.6088,
-        "R²": 0.1718,
-        "RMSE giá cao": 6.5204,
-        "Bias giá cao": -6.2445
+        "MAE": 1.8818,
+        "RMSE": 2.6359,
+        "R²": 0.1634,
+        "RMSE giá cao": 6.6217,
+        "Bias giá cao": -6.3079
       },
       "XGBoost | price (gốc)": {
-        "MAE": 1.1108,
-        "RMSE": 1.755,
-        "R²": 0.6252,
-        "RMSE giá cao": 3.7096,
-        "Bias giá cao": -2.5659
+        "MAE": 0.9905,
+        "RMSE": 1.657,
+        "R²": 0.6694,
+        "RMSE giá cao": 3.5527,
+        "Bias giá cao": -2.3434
       },
       "XGBoost | log1p(price)": {
-        "MAE": 1.0669,
-        "RMSE": 1.7729,
-        "R²": 0.6175,
-        "RMSE giá cao": 4.1688,
-        "Bias giá cao": -3.0272
+        "MAE": 0.9747,
+        "RMSE": 1.6937,
+        "R²": 0.6546,
+        "RMSE giá cao": 3.9665,
+        "Bias giá cao": -2.7844
       }
     },
     "outliers_xgb": {
       "Train CÓ outlier": {
-        "MAE": 2.4911,
-        "RMSE": 7.7287,
-        "R2": -6.4373
+        "MAE": 2.128,
+        "RMSE": 9.7467,
+        "R2": -10.8285
       },
       "Train ĐÃ lọc outlier": {
-        "MAE": 1.1284,
-        "RMSE": 1.7831,
-        "R2": 0.6041
+        "MAE": 0.9887,
+        "RMSE": 1.6517,
+        "R2": 0.6603
       }
     }
   },
-  "note": "source CO Y bi loai. Buoc 5: danh gia 10-fold CV + Test (1 lan). model_best.pkl = XGBoost refit tren Train+Val. FE dung script/model/features.py. Buoc 4 muc 11: ablation FE/PCA, log-target, outlier (xem meta['ablation']).",
+  "note": "source CO Y bi loai; n_features bi loai; 7/12 co tien ich che tac duoc mask NaN theo nguon (MNAR, xem features.OBSERVED_FLAGS; kiem toan o Buoc 2 - notebook 02 v2); XGBoost co monotone_constraints tren 12 co. Buoc 5: danh gia 10-fold CV + Test (1 lan). model_best.pkl = XGBoost refit tren Train+Val. FE dung v2/script/model/features.py. Buoc 4 muc 11: ablation FE/PCA, log-target, outlier (xem meta['ablation']).",
   "cv_metrics": {
     "OLS": {
-      "CV_RMSE_mean": 2.5561,
-      "CV_RMSE_std": 0.0225,
-      "CV_MAE_mean": 1.946,
-      "CV_R2_mean": 0.2032,
-      "CV_R2_std": 0.0052
+      "CV_RMSE_mean": 2.5825,
+      "CV_RMSE_std": 0.0182,
+      "CV_MAE_mean": 1.9546,
+      "CV_R2_mean": 0.193,
+      "CV_R2_std": 0.0077
     },
     "Ridge": {
-      "CV_RMSE_mean": 2.5561,
-      "CV_RMSE_std": 0.0226,
-      "CV_MAE_mean": 1.9459,
-      "CV_R2_mean": 0.2032,
-      "CV_R2_std": 0.0052
+      "CV_RMSE_mean": 2.5825,
+      "CV_RMSE_std": 0.0182,
+      "CV_MAE_mean": 1.9545,
+      "CV_R2_mean": 0.193,
+      "CV_R2_std": 0.0077
     },
     "LASSO": {
-      "CV_RMSE_mean": 2.5599,
-      "CV_RMSE_std": 0.0233,
-      "CV_MAE_mean": 1.948,
-      "CV_R2_mean": 0.2008,
-      "CV_R2_std": 0.0054
+      "CV_RMSE_mean": 2.587,
+      "CV_RMSE_std": 0.0189,
+      "CV_MAE_mean": 1.9574,
+      "CV_R2_mean": 0.1902,
+      "CV_R2_std": 0.0077
     },
     "Random Forest": {
-      "CV_RMSE_mean": 1.7298,
-      "CV_RMSE_std": 0.0182,
-      "CV_MAE_mean": 1.0286,
-      "CV_R2_mean": 0.635,
-      "CV_R2_std": 0.0075
+      "CV_RMSE_mean": 1.6569,
+      "CV_RMSE_std": 0.0124,
+      "CV_MAE_mean": 0.9952,
+      "CV_R2_mean": 0.6677,
+      "CV_R2_std": 0.0071
     },
     "XGBoost": {
-      "CV_RMSE_mean": 1.7403,
-      "CV_RMSE_std": 0.0183,
-      "CV_MAE_mean": 1.1006,
-      "CV_R2_mean": 0.6306,
-      "CV_R2_std": 0.0069
+      "CV_RMSE_mean": 1.8814,
+      "CV_RMSE_std": 0.0075,
+      "CV_MAE_mean": 1.2467,
+      "CV_R2_mean": 0.5716,
+      "CV_R2_std": 0.0076
     }
   },
   "test_metrics": {
     "OLS": {
-      "Test_MAE": 1.9508,
-      "Test_RMSE": 2.5578,
-      "Test_R2": 0.2098
+      "Test_MAE": 1.9579,
+      "Test_RMSE": 2.5857,
+      "Test_R2": 0.1899
     },
     "Ridge": {
-      "Test_MAE": 1.9509,
-      "Test_RMSE": 2.5578,
-      "Test_R2": 0.2097
+      "Test_MAE": 1.9579,
+      "Test_RMSE": 2.5857,
+      "Test_R2": 0.1899
     },
     "LASSO": {
-      "Test_MAE": 1.9551,
-      "Test_RMSE": 2.5636,
-      "Test_R2": 0.2062
+      "Test_MAE": 1.9612,
+      "Test_RMSE": 2.5893,
+      "Test_R2": 0.1876
     },
     "Random Forest": {
-      "Test_MAE": 1.0317,
-      "Test_RMSE": 1.7475,
-      "Test_R2": 0.6312
+      "Test_MAE": 1.0019,
+      "Test_RMSE": 1.6657,
+      "Test_R2": 0.6638
     },
     "XGBoost": {
-      "Test_MAE": 1.0978,
-      "Test_RMSE": 1.7462,
-      "Test_R2": 0.6317
+      "Test_MAE": 1.2565,
+      "Test_RMSE": 1.8954,
+      "Test_R2": 0.5647
     }
   },
-  "most_accurate_test": "XGBoost",
+  "most_accurate_test": "Random Forest",
   "final_model_trained_on": "Train+Val (85%)"
 }

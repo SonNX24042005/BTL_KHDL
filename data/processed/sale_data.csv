@@ -1,4 +1,4 @@
-﻿source,detail_link,price,area,full_address,posted_date,description,bedrooms,bathrooms,feature_Đầy đủ nội thất,feature_Có gác,feature_Có kệ bếp,feature_Có máy lạnh,feature_Có máy giặt,feature_Có tủ lạnh,feature_Có thang máy,feature_Không chung chủ,feature_Giờ giấc tự do,feature_Có bảo vệ 24/24,feature_Có hầm để xe,feature_Có nước nóng
+source,detail_link,price,area,full_address,posted_date,description,bedrooms,bathrooms,feature_Đầy đủ nội thất,feature_Có gác,feature_Có kệ bếp,feature_Có máy lạnh,feature_Có máy giặt,feature_Có tủ lạnh,feature_Có thang máy,feature_Không chung chủ,feature_Giờ giấc tự do,feature_Có bảo vệ 24/24,feature_Có hầm để xe,feature_Có nước nóng
 github_hanoi,,4000.16,46.0,"Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội, Quận Cầu Giấy",2020-08-05,,5,1,1,0,0,0,0,0,0,0,0,0,1,0
 github_hanoi,,4300.14,37.0,"Đường Kim Giang, Phường Kim Giang, Quận Thanh Xuân, Hà Nội, Quận Thanh Xuân",2020-08-05,,3,1,0,0,0,0,1,0,0,1,1,0,1,0
 github_hanoi,,2600.0,40.0,"phố minh khai, Phường Minh Khai, Quận Hai Bà Trưng, Hà Nội, Quận Hai Bà Trưng",2020-08-05,,4,1,0,1,0,1,1,1,0,1,1,0,1,0
