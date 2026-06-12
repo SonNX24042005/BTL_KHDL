@@ -1,0 +1,110 @@
+% ============================================================
+%  BÁO CÁO ĐỒ ÁN — Nhập môn Khoa học Dữ liệu (IT4142)
+%  Trường Đại học Bách khoa Hà Nội — SOICT
+%  Compile: XeLaTeX
+% ============================================================
+\documentclass{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{DejaVu Sans Mono}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage[vietnamese]{babel}
+
+\addto\captionsvietnamese{
+  \renewcommand{\contentsname}{Mục lục}
+  \renewcommand{\listfigurename}{Danh sách Hình}
+  \renewcommand{\listtablename}{Danh sách Bảng}
+  \renewcommand{\refname}{Tài liệu tham khảo}
+  \renewcommand{\abstractname}{Tóm tắt}
+  \renewcommand{\figurename}{Hình}
+  \renewcommand{\tablename}{Bảng}
+}
+
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{longtable}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}m{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}m{#1}}
+
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{caption}
+\captionsetup{font=small, labelfont=bf, labelsep=period, justification=centering}
+\graphicspath{{images/}}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\lstset{
+  basicstyle        = \ttfamily\small,
+  frame             = single,
+  breaklines        = true,
+  showstringspaces  = false,
+  xleftmargin       = 4pt,
+  xrightmargin      = 4pt,
+}
+
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{pifont}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = black,
+  citecolor  = black,
+  urlcolor   = black,
+  pdftitle   = {Báo cáo Đồ án IT4142 — Giá thuê Nhà trọ/Căn hộ},
+  pdfauthor  = {Nhóm IT4142 HUST}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{IT4142 — Phân tích \& dự báo giá thuê Nhà trọ/Căn hộ}}
+\fancyhead[R]{\small\textit{HUST 2025.2}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─────────────────────────────────────────────────────────────
+\begin{document}
+
+\input{bia}
+
+\tableofcontents
+\newpage
+% \listoffigures
+% \listoftables
+\newpage
+
+% ── CẤU TRÚC 6 PHẦN (theo cautrucbaocao.md) ──────────────────────
+% 1. Giới thiệu (Motivation)
+% 2. Các nghiên cứu / giải pháp đã có (Related Works)
+% 3. Dữ liệu & Bài toán ban đầu (Data Pipeline + EDA)
+% 4. Phương pháp (Methodology: formalize + cũ→đề xuất)
+% 5. Kịch bản đánh giá & Kết quả (CV + Test + Ablation)
+% 6. Kết luận (Summary + Lessons + Future work)
+%    + Tài liệu tham khảo (cuối báo cáo)
+% ─────────────────────────────────────────────────────────────────
+\input{sections/01_intro}
+\input{sections/02_related_works}
+\input{sections/03_data}
+\input{sections/04_methodology}
+\input{sections/05_evaluation}
+\input{sections/06_conclusion}
+
+\newpage
+\input{sections/07_references}
+
+\end{document}

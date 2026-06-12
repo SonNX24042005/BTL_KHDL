@@ -1,0 +1,65 @@
+%% ============================================================
+%%  SECTION 1 — GIỚI THIỆU (Introduction)
+%%  Trả lời: Tại sao lại chọn đề tài này? (Motivation)
+%% ============================================================
+\section{Giới thiệu}
+\label{sec:intro}
+
+\subsection{Động lực và tính cấp thiết}
+
+Thị trường cho thuê nhà trọ và căn hộ tại Việt Nam đang phát triển mạnh,
+đặc biệt tại các đô thị lớn như Hà Nội và TP. Hồ Chí Minh.
+Tuy nhiên, thông tin giá thuê hiện nằm rải rác trên hàng chục trang web với định dạng
+và đơn vị không thống nhất; không ít tin đăng chỉ ghi \textit{``giá thỏa thuận''},
+khiến người thuê khó so sánh và đánh giá mức giá hợp lý.
+
+Vấn đề này tạo ra ba hướng giá trị thực tiễn mà đồ án hướng tới:
+\begin{enumerate}[leftmargin=*, itemsep=3pt]
+  \item \textbf{Đối với người thuê:} có thể ước lượng mức giá tham khảo hợp lý
+        trước khi đàm phán, tránh bị định giá quá cao.
+  \item \textbf{Đối với chủ nhà:} hiểu được mặt bằng khu vực để định giá cạnh tranh.
+  \item \textbf{Đối với nghiên cứu:} cung cấp bộ dữ liệu tổng hợp đa nguồn đầu tiên
+        về thị trường cho thuê Việt Nam, cùng quy trình tái tạo công khai.
+\end{enumerate}
+
+\subsection{Ý nghĩa học thuật}
+
+Từ góc độ Khoa học Dữ liệu, đề tài này bao trùm toàn bộ vòng đời
+\textit{Knowledge Discovery in Databases} (KDD): thu thập $\to$ tích hợp $\to$ làm sạch
+$\to$ khám phá (EDA) $\to$ mô hình hóa $\to$ triển khai, đặt trọng tâm vào
+\textbf{chất lượng dữ liệu} và \textbf{phân tích nhân quả} thay vì chỉ tối ưu chỉ số mô hình.
+Hai phát hiện điển hình là \textbf{Nghịch lý Simpson} do cấu trúc nguồn gây ra
+(đòi hỏi phân tích phân tầng trước khi kết luận) và việc \textbf{kiểm toán nguồn gốc
+dữ liệu} (data provenance) phát hiện 7/12 cờ tiện ích bị \textit{chế tác} ở bước tích hợp —
+dẫn tới cơ chế xử lý thiếu-không-ngẫu-nhiên (MNAR) và ràng buộc đơn điệu
+cho mô hình triển khai (Mục~\ref{subsec:audit}).
+
+\subsection{Phạm vi bài toán}
+
+\begin{itemize}[leftmargin=*, itemsep=3pt]
+  \item \textbf{Input:} diện tích, số phòng ngủ/tắm, thành phố/quận, 12 cờ tiện ích.
+  \item \textbf{Output:} giá thuê dự báo (số thực, triệu VNĐ/tháng)
+        $\Rightarrow$ \textbf{bài toán Hồi quy}.
+  \item \textbf{Phương pháp đánh giá:} MAE, RMSE, R\textsuperscript{2}
+        (xem Mục~\ref{sec:eval} để biết cách thiết lập thực nghiệm).
+  \item \textbf{Dữ liệu:} 133.586 bản ghi từ 10 nguồn, sau tích hợp và lọc ngoại lệ
+        (Mục~\ref{sec:data}).
+\end{itemize}
+
+\subsection{Đóng góp chính}
+
+\begin{enumerate}[leftmargin=*, itemsep=3pt]
+  \item Xây dựng pipeline thu thập và tích hợp dữ liệu cho thuê đa nguồn
+        (10 trang web + bộ dữ liệu công khai).
+  \item Phát hiện và phân tích \textbf{Nghịch lý Simpson} do thiên lệch nguồn,
+        dẫn tới quyết định thiết kế mô hình có căn cứ.
+  \item Thực hiện \textbf{3 thực nghiệm đối sánh} (ablation study) kiểm chứng
+        các quyết định tiền xử lý: Feature Engineering vs.\ dữ liệu thô,
+        biến mục tiêu gốc vs.\ log-transform, và tác động của ngoại lệ.
+  \item \textbf{Kiểm toán sau triển khai} (Mục~\ref{subsec:audit}): truy vết hành vi
+        phi lý của mô hình về tận dữ liệu gốc, phát hiện \textbf{7/12 cờ tiện ích bị điền
+        ngẫu nhiên} ở bước tích hợp; khắc phục bằng cơ chế \textbf{mask MNAR}
+        (thiếu-không-ngẫu-nhiên) và \textbf{ràng buộc đơn điệu}, bảo đảm mô hình
+        triển khai hợp lý về kinh tế học (thêm tiện ích không làm giảm giá dự báo).
+  \item Triển khai ứng dụng web demo (Streamlit) dự báo giá theo khu vực.
+\end{enumerate}
