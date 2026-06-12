@@ -8,13 +8,18 @@
 
 ## 📊 Kết quả chính
 
-| | Mô hình triển khai | Test MAE | Test RMSE | Test R² |
+| Mô hình | Test MAE | Test RMSE | Test R² | Ghi chú |
 |---|---|---|---|---|
-| **`models/model_best.pkl`** | **XGBoost** | **1.10 triệu** | **1.75 triệu** | **0.632** |
+| **XGBoost** | **1.26 triệu** | **1.90 triệu** | **0.565** | ★ Mô hình triển khai (`model_best.pkl`) |
+| Random Forest | 1.00 triệu | 1.67 triệu | 0.664 | Chính xác hơn nhưng nặng hơn (~5.6 MB) |
+| OLS / Ridge / LASSO | ~1.96 triệu | ~2.59 triệu | ~0.19 | Mô hình tuyến tính — baseline |
 
-Mô hình dự báo giá dựa trên **diện tích, khu vực (thành phố/quận), số phòng, 12 tiện ích**. Mô
-hình cây (XGBoost/Random Forest) vượt trội mô hình tuyến tính (Test R² 0.63 so với 0.18). *Cố ý
-KHÔNG dùng `source` (nguồn web)* làm đặc trưng vì đó là artifact thu thập, không phải yếu tố định giá.
+Mô hình dự báo giá dựa trên **diện tích, khu vực (thành phố/quận), số phòng ngủ, số phòng tắm, và
+12 tiện ích**. Mô hình cây (XGBoost/RF) vượt trội mô hình tuyến tính rõ rệt (R² 0.56+ so với 0.19).
+*Cố ý KHÔNG dùng `source` (nguồn web) làm đặc trưng* vì đó là artifact thu thập, không phải yếu tố
+định giá.
+
+Tập dữ liệu: **133,586 bản ghi** sau lọc (chia 70/15/15 = 93 563 / 19 985 / 20 038).
 
 ---
 
@@ -22,38 +27,51 @@ KHÔNG dùng `source` (nguồn web)* làm đặc trưng vì đó là artifact th
 
 ```
 btl_khdl/
-├── app.py                       # ★ App Streamlit dự báo giá (Bước 6)
-├── requirements.txt             # Danh sách thư viện + phiên bản
+├── app.py                          # ★ App Streamlit dự báo giá (Bước 6)
+├── requirements.txt
 ├── README.md
+│
 ├── data/
-│   ├── raw/                     # Dữ liệu thô từ các nguồn web (Bước 1)
-│   └── processed/               # Dữ liệu đã làm sạch (Bước 2)
-│       └── rental_data_clean.csv   # 133k bản ghi — đầu vào cho EDA & mô hình
+│   ├── raw/                        # Dữ liệu thô từ các nguồn (không track trong git)
+│   └── processed/
+│       ├── rental_data_clean.csv   # ~133k bản ghi sạch — đầu vào EDA & mô hình
+│       └── rental_data.csv         # Dữ liệu thuê đã xử lý sơ bộ (trước lọc outlier)
+│
 ├── notebooks/
-│   ├── 03_eda.ipynb             # Bước 3 — EDA & trực quan hóa
-│   ├── 04_modeling.ipynb        # Bước 4 — huấn luyện + tinh chỉnh 5 mô hình
-│   └── 05_evaluation.ipynb      # Bước 5 — 10-fold CV + đánh giá Test
+│   ├── 02_data_cleaning.ipynb      # Bước 2 — ETL & làm sạch
+│   ├── 03_eda.ipynb                # Bước 3 — EDA & trực quan hóa
+│   ├── 04_modeling.ipynb           # Bước 4 — huấn luyện + tinh chỉnh 5 mô hình
+│   └── 05_evaluation.ipynb         # Bước 5 — 10-fold CV + đánh giá Test
+│
 ├── script/
-│   ├── <nguồn>/                 # Spider cào dữ liệu từng web (Bước 1)
-│   ├── eda/build_eda_notebook.py
-│   └── model/                   # ★ Mã nguồn mô hình
-│       ├── features.py             # Feature engineering DÙNG CHUNG train/serve
-│       ├── build_model_notebook.py # dựng notebook Bước 4
-│       ├── build_eval_notebook.py  # dựng notebook Bước 5
-│       └── build_app_assets.py     # sinh dữ liệu phụ trợ cho app
-├── models/                      # Mô hình & metadata (sinh ở Bước 4–5)
-│   ├── model_best.pkl              # Mô hình triển khai (XGBoost)
-│   ├── model_{ols,ridge,lasso,xgboost}.pkl
-│   ├── metadata.json               # cột, siêu tham số, chỉ số CV/Test
-│   └── app_assets.json             # danh mục khu vực + thống kê cho app
+│   ├── cleaning/
+│   │   └── build_clean_notebook.py # Dựng notebook Bước 2
+│   ├── eda/
+│   │   └── build_eda_notebook.py   # Dựng notebook Bước 3
+│   ├── model/
+│   │   ├── features.py             # ★ Feature engineering dùng chung train/serve
+│   │   ├── build_model_notebook.py # Dựng notebook Bước 4
+│   │   └── build_eval_notebook.py  # Dựng notebook Bước 5
+│   └── report/
+│       ├── extract_report_numbers.py
+│       └── report_numbers.json     # Các chỉ số tổng hợp cho báo cáo
+│
+├── models/
+│   ├── model_best.pkl              # Mô hình triển khai — XGBoost (~1.1 MB)
+│   ├── model_xgboost.pkl
+│   ├── model_ols.pkl
+│   ├── model_ridge.pkl
+│   ├── model_lasso.pkl
+│   ├── model_random_forest.pkl     # Gitignored (~5.6 MB); tái tạo từ metadata.json
+│   └── metadata.json               # Cột đặc trưng, siêu tham số, chỉ số CV/Test
+│
 └── docs/
-    ├── bao_cao/eda/             # biểu đồ EDA (PNG + HTML tương tác)
-    ├── bao_cao/model/           # biểu đồ Bước 4 (so sánh mô hình, importance)
-    ├── bao_cao/eval/            # biểu đồ Bước 5 (Test, learning curve)
-    └── project_workflow*.md     # tài liệu quy trình 6 bước
+    ├── cleaning/                   # Biểu đồ Bước 2 (5 PNG + 1 HTML)
+    ├── eda/                        # Biểu đồ Bước 3 (15 PNG + 5 HTML tương tác)
+    ├── model/                      # Biểu đồ Bước 4 (so sánh mô hình, feature importance, ablation)
+    ├── eval/                       # Biểu đồ Bước 5 (CV so sánh, Test, learning curve)
+    └── Bao_Cao_PDF/                # Báo cáo LaTeX (gitignored — dùng Overleaf)
 ```
-> `models/model_random_forest.pkl` (~95 MB) bị `.gitignore` vì vượt giới hạn 100 MB của GitHub;
-> tái tạo được từ `metadata.json` (`best_params`) bằng 1 lần `fit`.
 
 ---
 
@@ -78,18 +96,26 @@ pip install -r requirements.txt
 
 ## ▶️ Cách chạy
 
-### Chạy app demo (Bước 6) — *xem ngay không cần huấn luyện lại*
+### Chạy app demo — *xem ngay không cần huấn luyện lại*
+
 Mô hình đã được huấn luyện sẵn (`models/model_best.pkl`), chỉ cần:
+
 ```bash
 streamlit run app.py
 # Mở trình duyệt tại http://localhost:8501
 ```
-App gồm 3 tab: **🔮 Dự báo giá** (nhập diện tích/khu vực/tiện ích → giá + đối chiếu mặt bằng quận),
-**📊 Phân tích thị trường** (biểu đồ EDA), **🤖 Về mô hình** (chỉ số & biểu đồ đánh giá).
 
-### Tái lập toàn bộ pipeline (Bước 3 → 5)
+App gồm 3 tab: **🔮 Dự báo giá** (nhập diện tích/khu vực/tiện ích → giá ước tính + đối chiếu mặt
+bằng quận), **📊 Phân tích thị trường** (biểu đồ EDA), **🤖 Về mô hình** (chỉ số & biểu đồ đánh giá).
+
+### Tái lập toàn bộ pipeline (Bước 2 → 5)
+
 ```bash
-# Bước 3 — EDA (dựng + chạy notebook, nhúng sẵn biểu đồ)
+# Bước 2 — ETL & làm sạch
+python script/cleaning/build_clean_notebook.py
+jupyter nbconvert --to notebook --execute --inplace notebooks/02_data_cleaning.ipynb
+
+# Bước 3 — EDA
 python script/eda/build_eda_notebook.py
 jupyter nbconvert --to notebook --execute --inplace notebooks/03_eda.ipynb
 
@@ -100,10 +126,8 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/04_modeling.ipynb
 # Bước 5 — 10-fold CV + đánh giá Test  (~10 phút)
 python script/model/build_eval_notebook.py
 jupyter nbconvert --to notebook --execute --inplace notebooks/05_evaluation.ipynb
-
-# Sinh lại dữ liệu phụ trợ cho app
-python script/model/build_app_assets.py
 ```
+
 > Hoặc mở trực tiếp các notebook trong Jupyter/VS Code và Run All.
 
 ---
@@ -112,41 +136,39 @@ python script/model/build_app_assets.py
 
 | Bước | Nội dung | Sản phẩm |
 |---|---|---|
-| 1 | Thu thập dữ liệu (web scraping) | `data/raw/*` |
-| 2 | Tích hợp & làm sạch | `data/processed/rental_data_clean.csv` |
-| 3 | EDA & trực quan hóa | `notebooks/03_eda.ipynb`, `docs/bao_cao/eda/` |
-| 4 | Huấn luyện 5 mô hình (OLS, Ridge, LASSO, RF, XGBoost) + tinh chỉnh + **thực nghiệm đối sánh** (thô↔FE↔FE+PCA, `price`↔`log(price)`, có↔không lọc outlier) | `notebooks/04_modeling.ipynb`, `models/` |
-| 5 | 10-fold CV + đánh giá Test (1 lần) | `notebooks/05_evaluation.ipynb` |
-| 6 | App Streamlit + đóng gói | `app.py`, `requirements.txt`, README |
+| 1 | Thu thập dữ liệu (web scraping 7 nguồn) | `data/raw/` |
+| 2 | Tích hợp, làm sạch & kiểm định tiện ích | `data/processed/rental_data_clean.csv`, `notebooks/02_data_cleaning.ipynb` |
+| 3 | EDA & trực quan hóa (15 biểu đồ, K-Means, PCA, Simpson's paradox) | `notebooks/03_eda.ipynb`, `docs/eda/` |
+| 4 | Huấn luyện 5 mô hình (OLS, Ridge, LASSO, RF, XGBoost) + tinh chỉnh + 3 thực nghiệm đối sánh | `notebooks/04_modeling.ipynb`, `models/`, `docs/model/` |
+| 5 | 10-fold CV + đánh giá Test (1 lần duy nhất) | `notebooks/05_evaluation.ipynb`, `docs/eval/` |
+| 6 | App Streamlit + đóng gói | `app.py`, `requirements.txt` |
 
 **Phương pháp ML:** bài toán hồi quy; chia Train/Val/Test = 70/15/15; chuẩn hóa số (Z-score),
-One-Hot khu vực (gộp hạng mục hiếm), mục tiêu giữ nguyên `price` gốc (log-transform bị thực
-nghiệm 11.2 bác bỏ — làm RMSE tệ hơn và dự đoán hụt phân khúc giá cao); tinh chỉnh
-GridSearchCV (tuyến tính) + RandomizedSearchCV (cây) + early stopping (XGBoost); chọn mô hình theo
-RMSE/R² trên Validation rồi đánh giá cuối trên Test. Mọi quyết định tiền xử lý đều được **kiểm
-chứng bằng thực nghiệm đối sánh** (notebook 04, mục 11): Feature Engineering ↔ dữ liệu thô ↔ PCA,
-log-transform mục tiêu, và lọc outlier. Chi tiết: `docs/project_workflow_tong_quan.md`.
+One-Hot khu vực (gộp hạng mục hiếm `< 10 mẫu`), mục tiêu giữ nguyên `price` gốc (log-transform
+được thực nghiệm 05-Bước4 bác bỏ — làm RMSE tệ hơn); tinh chỉnh GridSearchCV (tuyến tính) +
+RandomizedSearchCV (RF) + early stopping (XGBoost); chọn mô hình theo RMSE/R² trên Validation rồi
+đánh giá cuối trên Test. Ba thực nghiệm đối sánh (notebook 04): Feature Engineering ↔ dữ liệu thô
+↔ PCA; log-transform mục tiêu; lọc outlier.
 
 ---
 
 ## 🌐 Nguồn dữ liệu thô (Bước 1)
 
-| Thư mục | Website nguồn |
+Dữ liệu thô lưu ở `data/raw/` (không track trong git). Các nguồn:
+
+| Thư mục | Nguồn |
 |---|---|
-| `data/raw/batdongsan/` | batdongsan.com.vn |
-| `data/raw/alonhadat/` | alonhadat.com.vn |
 | `data/raw/nhatot/` | nhatot.com |
 | `data/raw/phongtro123/` | phongtro123.com |
-| `data/raw/lozido/` | lozido.com |
 | `data/raw/chothuephongtro/` | chothuephongtro.me |
-
-> Dữ liệu thô là dữ liệu gốc, **không chỉnh sửa trực tiếp**.
+| `data/raw/lozido/` | lozido.com |
+| `data/raw/ChothuenhadattoanVN/` | chothuenhadattoavn.com |
+| `data/raw/facebook/` | Facebook Marketplace |
+| `data/raw/github/` | Dataset công khai (GitHub) |
 
 ---
 
 ## 📦 Thư viện sử dụng
-Xem `requirements.txt` (đã ghim phiên bản). Chính: pandas, numpy, scikit-learn, xgboost, joblib,
-matplotlib, seaborn, plotly, streamlit, nbformat/nbconvert.
 
-> *Lưu ý đạo văn:* dự án sử dụng các thư viện mã nguồn mở nêu trên; mọi thuật toán/được kế thừa
-> đều được trích dẫn trong báo cáo theo yêu cầu môn học.
+Xem `requirements.txt` (đã ghim phiên bản). Chính: `pandas`, `numpy`, `scikit-learn`, `xgboost`,
+`joblib`, `matplotlib`, `seaborn`, `plotly`, `streamlit`, `nbformat`, `nbconvert`.
