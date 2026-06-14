@@ -99,7 +99,9 @@ Mỗi nút chỉ xét $\sqrt{d}$ đặc trưng ngẫu nhiên (ngẫu nhiên hóa
 Nắm bắt được tương tác phi tuyến (khu vực × diện tích);
 bagging giảm phương sai — ổn định với dữ liệu nhiễu.
 Tinh chỉnh bằng RandomizedSearchCV.
-Best: 200 cây, depth 10, \texttt{min\_split=5}.
+Best: 500 cây, depth 20, \texttt{min\_split=10}.
+Giống XGBoost (xem phần dưới), Random Forest cũng được áp \textbf{ràng buộc đơn điệu} cho 12 cờ
+tiện ích để hai mô hình cây được đánh giá trên \textbf{cùng một điều kiện} (so sánh công bằng).
 
 \subsubsection*{Phương pháp đề xuất: XGBoost (Gradient Boosting với Regularization)}
 
@@ -111,9 +113,18 @@ Boosting: mỗi cây $t$ sửa residual của tổ hợp trước theo hướng 
 
 Hàm mục tiêu XGBoost = loss + regularization (L1 \texttt{reg\_alpha} + L2 \texttt{reg\_lambda}).
 
-\textbf{Tại sao chọn XGBoost để triển khai} — dù Random Forest chính xác hơn một chút trên
-chỉ số (Mục~\ref{subsec:main_results}), XGBoost thắng ở các tiêu chí quan trọng cho một
-\textit{ứng dụng thực tế}: gọn nhẹ, suy luận nhanh và kiểm soát overfitting tốt.
+\textbf{Ràng buộc đơn điệu (\texttt{monotone\_constraints}).} Cả XGBoost và Random Forest đều áp
+ràng buộc đơn điệu $+1$ cho 12 cờ tiện ích: \textit{tick thêm một tiện ích không bao giờ làm giảm
+giá dự báo}. Đây là tiên nghiệm miền hợp lý cho công cụ định giá (người dùng app khai báo tiện ích
+trực tiếp) và bảo đảm dự đoán không phi lý. Việc áp \textbf{cùng} ràng buộc cho cả hai mô hình cây
+giúp so sánh chúng trên cùng một sân chơi.
+
+\textbf{Tại sao chọn XGBoost để triển khai.} Dưới cùng ràng buộc đơn điệu (so sánh công bằng),
+XGBoost \textbf{chính xác hơn hẳn} Random Forest (Test R\textsuperscript{2} $0.565$ vs.\ $0.459$;
+Mục~\ref{subsec:main_results}): boosting cộng dồn ``trải'' ràng buộc qua nhiều cây nên mất ít độ
+khớp, trong khi Random Forest (bagging) bị ép đơn điệu cứng trên từng cây độc lập rồi mới trung
+bình nên suy giảm mạnh hơn. XGBoost còn thắng ở các tiêu chí triển khai: gọn nhẹ, suy luận nhanh,
+kiểm soát overfitting tốt.
 
 \begin{table}[H]
   \centering
@@ -123,18 +134,19 @@ chỉ số (Mục~\ref{subsec:main_results}), XGBoost thắng ở các tiêu ch�
     \toprule
     \textbf{Tiêu chí} & \textbf{Random Forest} & \textbf{XGBoost (triển khai)} \\
     \midrule
-    Độ chính xác (Test R\textsuperscript{2}) & \textbf{0.664} & 0.565 \\
-    Kích thước mô hình & $\approx$5.6 MB (200 cây) & \textbf{$\approx$0.86 MB} \\
+    Độ chính xác (Test R\textsuperscript{2}, cùng ràng buộc) & 0.459 & \textbf{0.565} \\
+    Kích thước mô hình & $\approx$56 MB (500 cây) & \textbf{$\approx$0.86 MB} \\
     Triển khai (GitHub <100MB, app) & Nặng hơn & \textbf{Gọn, suy luận nhanh} \\
     Kiểm soát overfitting & Bagging & Regularization + \textbf{early stopping} \\
     \bottomrule
   \end{tabularx}
 \end{table}
 
-XGBoost nhỏ hơn Random Forest gần 7 lần, nạp và dự báo nhanh hơn trong app Streamlit,
-lại có cơ chế regularization (L1/L2) cùng early stopping giúp tự chọn số cây — phù hợp cho
-một ứng dụng demo cần triển khai gọn nhẹ. Đây là \textit{đánh đổi có chủ đích}: chấp nhận
-giảm nhẹ độ chính xác để đổi lấy khả năng triển khai.
+Khi so sánh công bằng (cùng ràng buộc đơn điệu), XGBoost \textbf{vừa chính xác hơn vừa nhỏ hơn}
+Random Forest hàng chục lần, nạp và dự báo nhanh hơn trong app Streamlit, lại có regularization
+(L1/L2) cùng early stopping giúp tự chọn số cây. Khác với cách hiểu ``đánh đổi độ chính xác lấy
+triển khai'' thường gặp, ở đây \textbf{không có đánh đổi}: XGBoost là lựa chọn tốt nhất trên
+\textit{cả hai} phương diện.
 
 \textbf{Quy trình tinh chỉnh:}
 (1) RandomizedSearchCV dò lưới (\texttt{lr, depth, subsample, colsample, reg\_alpha, reg\_lambda});

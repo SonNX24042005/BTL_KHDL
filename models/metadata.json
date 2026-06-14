@@ -3,7 +3,7 @@
   "target": "price",
   "data_source": "v2/data/processed/rental_data_clean.csv (Buoc 2 - notebook 02 v2)",
   "best_model": "XGBoost",
-  "most_accurate_val": "Random Forest",
+  "most_accurate_val": "XGBoost",
   "feature_columns": {
     "num": [
       "area",
@@ -52,9 +52,9 @@
       "R2": 0.1924
     },
     "Random Forest": {
-      "MAE": 1.0135,
-      "RMSE": 1.6775,
-      "R2": 0.6612
+      "MAE": 1.3973,
+      "RMSE": 2.1485,
+      "R2": 0.4442
     },
     "XGBoost": {
       "MAE": 1.2556,
@@ -70,9 +70,9 @@
       "lasso__alpha": 0.001
     },
     "Random Forest": {
-      "rf__n_estimators": 200,
-      "rf__min_samples_split": 5,
-      "rf__max_depth": 10
+      "rf__n_estimators": 500,
+      "rf__min_samples_split": 10,
+      "rf__max_depth": 20
     },
     "XGBoost": {
       "xgb__subsample": 0.6,
@@ -110,7 +110,7 @@
       "github_hn": 0,
       "github_dn": 0
     },
-    "monotone_constraints": "12 co feature_* : +1 (khong am khi tick tien ich)"
+    "monotone_constraints": "12 co feature_* : +1 (khong am khi tick tien ich) - ap cho ca XGBoost va RF"
   },
   "ablation": {
     "fe_pca_rmse": {
@@ -184,7 +184,7 @@
       }
     }
   },
-  "note": "source CO Y bi loai; n_features bi loai; 7/12 co tien ich che tac duoc mask NaN theo nguon (MNAR, xem features.OBSERVED_FLAGS; kiem toan o Buoc 2 - notebook 02 v2); XGBoost co monotone_constraints tren 12 co. Buoc 5: danh gia 10-fold CV + Test (1 lan). model_best.pkl = XGBoost refit tren Train+Val. FE dung v2/script/model/features.py. Buoc 4 muc 11: ablation FE/PCA, log-target, outlier (xem meta['ablation']).",
+  "note": "source CO Y bi loai; n_features bi loai; 7/12 co tien ich che tac duoc mask NaN theo nguon (MNAR, xem features.OBSERVED_FLAGS; kiem toan o Buoc 2 - notebook 02 v2); CA XGBoost VA RF co monotone_constraints tren 12 co (so cong bang). Buoc 5: danh gia 10-fold CV + Test (1 lan). model_best.pkl = XGBoost refit tren Train+Val. FE dung v2/script/model/features.py. Buoc 4 muc 11: ablation FE/PCA, log-target, outlier (xem meta['ablation']).",
   "cv_metrics": {
     "OLS": {
       "CV_RMSE_mean": 2.5825,
@@ -208,11 +208,11 @@
       "CV_R2_std": 0.0077
     },
     "Random Forest": {
-      "CV_RMSE_mean": 1.6569,
-      "CV_RMSE_std": 0.0124,
-      "CV_MAE_mean": 0.9952,
-      "CV_R2_mean": 0.6677,
-      "CV_R2_std": 0.0071
+      "CV_RMSE_mean": 2.1118,
+      "CV_RMSE_std": 0.0285,
+      "CV_MAE_mean": 1.3749,
+      "CV_R2_mean": 0.4602,
+      "CV_R2_std": 0.0161
     },
     "XGBoost": {
       "CV_RMSE_mean": 1.8814,
@@ -239,9 +239,9 @@
       "Test_R2": 0.1876
     },
     "Random Forest": {
-      "Test_MAE": 1.0019,
-      "Test_RMSE": 1.6657,
-      "Test_R2": 0.6638
+      "Test_MAE": 1.3801,
+      "Test_RMSE": 2.1137,
+      "Test_R2": 0.4586
     },
     "XGBoost": {
       "Test_MAE": 1.2565,
@@ -249,6 +249,6 @@
       "Test_R2": 0.5647
     }
   },
-  "most_accurate_test": "Random Forest",
+  "most_accurate_test": "XGBoost",
   "final_model_trained_on": "Train+Val (85%)"
 }

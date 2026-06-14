@@ -36,8 +36,16 @@ st.set_page_config(page_title="Dự báo giá thuê nhà trọ", page_icon="🏠
 
 # ============================ NẠP TÀI NGUYÊN ================================
 @st.cache_resource
-def load_model():
-    return joblib.load(MODELS / "model_best.pkl")
+def load_models():
+    """Nạp cả 2 mô hình cây để người dùng so sánh.
+
+    - XGBoost = model_best.pkl (mô hình TRIỂN KHAI: gọn, có ràng buộc đơn điệu cờ tiện ích).
+    - Random Forest = chính xác hơn trên chỉ số (Test R²=0.664) nhưng nặng & KHÔNG ràng buộc.
+    """
+    return {
+        "XGBoost": joblib.load(MODELS / "model_best.pkl"),
+        "Random Forest": joblib.load(MODELS / "model_random_forest.pkl"),
+    }
 
 
 @st.cache_data
@@ -99,15 +107,19 @@ def build_assets(bin_cols):
     }
 
 
-model = load_model()
+MODELS_D = load_models()
 meta = load_json("metadata.json")
 
 BIN_COLS = meta["feature_columns"]["bin"]
 assets = build_assets(BIN_COLS)
-TEST = meta.get("test_metrics", {}).get(meta["best_model"], {})
 
 
-def predict_price(area, bedrooms, bathrooms, city, district, amenities):
+def model_test_metrics(name):
+    """Test metrics của mô hình theo tên (khớp khóa trong metadata.json)."""
+    return meta.get("test_metrics", {}).get(name, {})
+
+
+def predict_price(model, area, bedrooms, bathrooms, city, district, amenities):
     """Dựng đúng 1 dòng input theo schema của mô hình rồi dự báo (triệu VNĐ/tháng)."""
     row = {"area": area, "bedrooms": bedrooms, "bathrooms": bathrooms,
            "city": city, "district": district}
@@ -133,13 +145,14 @@ def load_pdp_base(n=1200):
 
 
 @st.cache_data
-def compute_pdp_area(city, n_grid=30):
-    """Partial Dependence của `area`: với mỗi mức diện tích trên lưới, đặt area=mức đó cho
-    TOÀN BỘ mẫu rồi lấy trung bình dự báo → marginalize các đặc trưng khác. Lọc theo thành
-    phố người dùng nếu đủ mẫu (≥50). Cuối cùng phủ Isotonic Regression để đường xu hướng
-    đơn điệu không-giảm (khử dao động cục bộ + bướu ở vùng diện tích lớn dữ liệu thưa).
+def compute_pdp_area(model_name, city, n_grid=30):
+    """Partial Dependence của `area` cho mô hình `model_name`: với mỗi mức diện tích trên
+    lưới, đặt area=mức đó cho TOÀN BỘ mẫu rồi lấy trung bình dự báo → marginalize các đặc
+    trưng khác. Lọc theo thành phố người dùng nếu đủ mẫu (≥50). Cuối cùng phủ Isotonic
+    Regression để đường xu hướng đơn điệu không-giảm (khử dao động cục bộ + bướu vùng thưa).
     """
     from sklearn.isotonic import IsotonicRegression
+    model = MODELS_D[model_name]
     base = load_pdp_base()
     sub = base[base["city"] == city]
     if len(sub) < 50:
@@ -164,16 +177,30 @@ def show_img(path, caption=None):
 
 # ================================ HEADER ===================================
 st.title("🏠 Dự báo Giá thuê Nhà trọ / Căn hộ theo Khu vực")
-st.caption("Đồ án Nhập môn Khoa học Dữ liệu (IT4930) — HUST · Mô hình: "
+_dep = model_test_metrics(meta["best_model"])
+st.caption("Đồ án Nhập môn Khoa học Dữ liệu (IT4930) — HUST · Mô hình triển khai mặc định: "
            f"**{meta['best_model']}** · "
-           f"Test R² = {TEST.get('Test_R2', float('nan')):.3f}, "
-           f"MAE = {TEST.get('Test_MAE', float('nan')):.2f} triệu/tháng")
+           f"Test R² = {_dep.get('Test_R2', float('nan')):.3f}, "
+           f"MAE = {_dep.get('Test_MAE', float('nan')):.2f} triệu/tháng "
+           "(có thể đổi sang Random Forest ở tab Dự báo)")
 
 tab_predict, tab_eda, tab_model = st.tabs(
     ["🔮 Dự báo giá", "📊 Phân tích thị trường (EDA)", "🤖 Về mô hình"])
 
 # ============================== TAB 1: DỰ BÁO ==============================
 with tab_predict:
+    model_name = st.radio(
+        "🤖 Mô hình dự báo",
+        list(MODELS_D.keys()),
+        horizontal=True,
+        captions=[
+            "Triển khai · ~0.9 MB · CÓ ràng buộc đơn điệu (tick tiện ích không giảm giá) · Test R²=0.565",
+            "Chính xác hơn · Test R²=0.664 · nặng ~5.6 MB · KHÔNG ràng buộc đơn điệu",
+        ],
+    )
+    sel_model = MODELS_D[model_name]
+    sel_test = model_test_metrics(model_name)
+
     left, right = st.columns([1, 1], gap="large")
 
     with left:
@@ -200,14 +227,16 @@ with tab_predict:
             amenities[am["col"]] = acols[i % 3].checkbox(am["label"], value=False)
 
     with right:
-        st.subheader("Kết quả dự báo")
-        price = predict_price(area, bedrooms, bathrooms, city, district, amenities)
-        mae = TEST.get("Test_MAE", 1.0)
+        st.subheader(f"Kết quả dự báo · {model_name}")
+        price = predict_price(sel_model, area, bedrooms, bathrooms, city, district, amenities)
+        mae = sel_test.get("Test_MAE", 1.0)
         lo, hi = max(0.3, price - mae), price + mae
 
         st.metric("💰 Giá thuê dự báo", f"{price:.1f} triệu/tháng",
-                  help="Ước lượng điểm từ mô hình XGBoost.")
-        st.caption(f"Khoảng tham khảo (± MAE trên Test): **{lo:.1f} – {hi:.1f}** triệu/tháng")
+                  help=f"Ước lượng điểm từ mô hình {model_name}.")
+        st.caption(f"Khoảng tham khảo (± MAE trên Test): **{lo:.1f} – {hi:.1f}** triệu/tháng "
+                   f"· {model_name}: Test R² = {sel_test.get('Test_R2', float('nan')):.3f}, "
+                   f"MAE = {mae:.2f} tr")
         if area > 0:
             st.caption(f"Tương đương đơn giá ~ **{price/area*1000:,.0f} nghìn/m²/tháng**")
 
@@ -230,7 +259,7 @@ with tab_predict:
 
         # ── Partial Dependence: xu hướng giá TRUNG BÌNH theo diện tích (đã làm trơn) ──
         with st.expander("📈 Xu hướng giá trung bình theo diện tích (Partial Dependence)"):
-            grid, means = compute_pdp_area(city)
+            grid, means = compute_pdp_area(model_name, city)
             pdp_df = pd.DataFrame({"area": grid, "price": means})
             line = alt.Chart(pdp_df).mark_line(color="#2D5BFF", strokeWidth=2.5).encode(
                 x=alt.X("area:Q", title="Diện tích (m²)"),
@@ -252,10 +281,17 @@ with tab_predict:
                 "và `area` cố ý không ràng buộc đơn điệu để giữ độ chính xác). Đường xu hướng "
                 "cho thấy: diện tích lớn hơn → giá trung bình cao hơn (hoặc không thấp đi).")
 
-        st.info("ℹ️ Mô hình **không dùng** 'nguồn web' làm đặc trưng — dự báo chỉ dựa trên "
-                "đặc điểm thật của phòng (diện tích, khu vực, tiện ích). Tiện ích được huấn luyện "
-                "với **ràng buộc đơn điệu**: tick thêm tiện ích không bao giờ làm giảm giá dự báo. "
-                "Kết quả mang tính tham khảo.")
+        st.info("ℹ️ Cả hai mô hình **không dùng** 'nguồn web' làm đặc trưng — dự báo chỉ dựa "
+                "trên đặc điểm thật của phòng (diện tích, khu vực, tiện ích). Kết quả mang tính "
+                "tham khảo.")
+        if model_name == "XGBoost":
+            st.success("✅ **XGBoost (triển khai)** có **ràng buộc đơn điệu**: tick thêm tiện ích "
+                       "không bao giờ làm giảm giá dự báo — hợp lý về kinh tế cho người dùng.")
+        else:
+            st.warning("⚠️ **Random Forest** chính xác hơn trên chỉ số (Test R²=0.664) nhưng "
+                       "**KHÔNG ràng buộc đơn điệu**: tick một số tiện ích có thể làm giá *giảm* "
+                       "(do tương quan hành vi đăng tin, không phải giá trị thật) — đó là lý do "
+                       "đồ án **triển khai XGBoost** dù RF có R² cao hơn.")
 
 # ============================== TAB 2: EDA =================================
 with tab_eda:
@@ -287,12 +323,18 @@ with tab_model:
 - **Quy trình đánh giá:** chia 70/15/15 → tinh chỉnh siêu tham số → 10-fold CV → đánh giá **1 lần
   trên Test**.
 """)
-    if TEST:
-        st.markdown("**Hiệu năng trên tập Test (đánh giá 1 lần):**")
+    txgb, trf = model_test_metrics("XGBoost"), model_test_metrics("Random Forest")
+    if txgb and trf:
+        st.markdown("**Hiệu năng trên tập Test (đánh giá 1 lần) — 2 mô hình cho chọn ở tab Dự báo:**")
         st.dataframe(pd.DataFrame({
-            "Chỉ số": ["MAE", "RMSE", "R²"],
-            "Giá trị": [f"{TEST['Test_MAE']:.3f} triệu", f"{TEST['Test_RMSE']:.3f} triệu",
-                        f"{TEST['Test_R2']:.3f}"]}), hide_index=True, width="stretch")
+            "Chỉ số": ["MAE (triệu)", "RMSE (triệu)", "R²"],
+            "XGBoost (triển khai)": [f"{txgb['Test_MAE']:.3f}", f"{txgb['Test_RMSE']:.3f}",
+                                     f"{txgb['Test_R2']:.3f}"],
+            "Random Forest": [f"{trf['Test_MAE']:.3f}", f"{trf['Test_RMSE']:.3f}",
+                              f"{trf['Test_R2']:.3f}"]}), hide_index=True, width="stretch")
+        st.caption("RF chính xác hơn trên chỉ số, nhưng XGBoost được **triển khai** vì gọn nhẹ + "
+                   "ràng buộc đơn điệu (tick tiện ích không giảm giá). Dùng bộ chọn ở tab Dự báo "
+                   "để so sánh trực tiếp dự đoán của hai mô hình.")
 
     m1, m2 = st.columns(2)
     with m1:

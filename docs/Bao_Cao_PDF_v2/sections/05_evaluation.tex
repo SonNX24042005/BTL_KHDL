@@ -57,9 +57,7 @@ siêu tham số đóng băng theo kết quả tinh chỉnh; cùng tập Validati
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.90\textwidth]{abl_04_fe_pca}
-  \caption{Thực nghiệm A — RMSE và R\textsuperscript{2} theo 4 biến thể đặc trưng.
-           FE cải thiện RMSE 3.5\% (tuyến tính) đến 14.6\% (XGBoost) so với dữ liệu thô;
-           PCA làm mô hình tuyến tính tệ hơn 1.4\% (và không áp dụng cho mô hình cây)}
+  \caption{Thực nghiệm A — RMSE và R\textsuperscript{2} theo 4 biến thể đặc trưng}
   \label{fig:abl_fe}
 \end{figure}
 
@@ -117,8 +115,7 @@ $\text{bias} = \overline{\hat{y} - y}$; âm nhiều = dự đoán hụt hệ th�
   \centering
   \includegraphics[width=0.90\textwidth]{abl_05_log_target}
   \caption{Thực nghiệm B — RMSE toàn cục (trái), RMSE phân khúc giá cao (giữa),
-           Bias giá cao (phải).
-           Log chỉ giảm MAE nhẹ; RMSE và bias phân khúc giá cao đều tệ hơn}
+           Bias giá cao (phải)}
   \label{fig:abl_log}
 \end{figure}
 
@@ -163,8 +160,7 @@ chấm trên cùng tập Validation vùng mục tiêu (\texttt{price}$\leq$17, \
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.90\textwidth]{abl_06_outliers}
-  \caption{Thực nghiệm C — RMSE của XGBoost có / không outlier trong Train.
-           Giữ outlier làm RMSE xấu hơn $\approx$4.8 lần trên vùng giá mục tiêu}
+  \caption{Thực nghiệm C — RMSE của XGBoost có / không outlier trong Train}
   \label{fig:abl_out}
 \end{figure}
 
@@ -221,10 +217,10 @@ dùng FE (city/district), mục tiêu \texttt{price} gốc, dữ liệu đã l�
     OLS           & 2.582 & 0.018 & 0.193 & 1.958 & 2.586 & 0.190 \\
     Ridge         & 2.582 & 0.018 & 0.193 & 1.958 & 2.586 & 0.190 \\
     LASSO         & 2.587 & 0.019 & 0.190 & 1.961 & 2.589 & 0.188 \\
-    Random Forest & \textbf{1.657} & 0.012 & \textbf{0.668} & \textbf{1.002} & \textbf{1.666} & \textbf{0.664} \\
+    Random Forest & 2.112 & 0.029 & 0.460 & 1.380 & 2.114 & 0.459 \\
     \midrule
     \textbf{XGBoost} $\star$
-      & 1.881 & 0.008 & 0.572 & 1.257 & 1.895 & 0.565 \\
+      & \textbf{1.881} & 0.007 & \textbf{0.572} & \textbf{1.256} & \textbf{1.895} & \textbf{0.565} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -232,40 +228,43 @@ dùng FE (city/district), mục tiêu \texttt{price} gốc, dữ liệu đã l�
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.86\textwidth]{eval_01_cv_rmse_comparison}
-  \caption{CV RMSE của 5 mô hình (mean $\pm$ std, 10 fold) —
-           mô hình cây vượt trội (RF $\approx$1.66, XGBoost $\approx$1.88 vs.\ $\approx$2.58 của
-           tuyến tính); std nhỏ xác nhận ổn định qua các cách chia}
+  \caption{CV RMSE của 5 mô hình (mean $\pm$ std, 10 fold)}
   \label{fig:cv_compare}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.86\textwidth]{model_01_model_comparison_val}
-  \caption{So sánh RMSE, MAE và R\textsuperscript{2} trên tập Validation — hai mô hình cây
-           cách xa tuyến tính; Random Forest cao hơn XGBoost trên cả ba chỉ số, song XGBoost
-           được chọn triển khai vì gọn nhẹ và nhanh (lý do chi tiết ngay bên dưới)}
+  \caption{So sánh RMSE, MAE và R\textsuperscript{2} của 5 mô hình trên tập Validation}
   \label{fig:val_compare}
 \end{figure}
 
 \textbf{Phân tích kết quả:}
 \begin{itemize}[leftmargin=*, itemsep=3pt]
   \item Mô hình cây \textbf{vượt trội rõ rệt} so với tuyến tính
-        (Test R\textsuperscript{2}: $\approx$0.57--0.66 vs.\ $\approx$0.19),
+        (Test R\textsuperscript{2}: $\approx$0.46--0.57 vs.\ $\approx$0.19),
         xác nhận quan hệ phi tuyến và tương tác khu vực $\times$ diện tích
         được gợi ý từ PCA ở Mục~\ref{subsec:clustering}.
   \item CV RMSE $\approx$ Test RMSE, std nhỏ $\Rightarrow$ mô hình \textbf{không overfit},
         khái quát hóa tốt.
-  \item \textbf{Chính xác nhất là Random Forest} (Test R\textsuperscript{2} = 0.664), nhưng
-        \textbf{mô hình triển khai là XGBoost} (Test R\textsuperscript{2} = 0.565) vì các lý do
-        thiên về \textit{khả năng triển khai thực tế}:
+  \item \textbf{So sánh công bằng — cả Random Forest lẫn XGBoost đều áp ràng buộc đơn điệu}
+        (tick tiện ích không làm giảm giá dự báo; xem Mục~\ref{sec:method}). Dưới cùng ràng buộc,
+        \textbf{XGBoost chính xác hơn hẳn Random Forest} (Test R\textsuperscript{2} $0.565$ vs.\
+        $0.459$; RMSE $1.895$ vs.\ $2.114$): boosting cộng dồn ``trải'' ràng buộc qua nhiều cây nên
+        mất ít độ khớp, còn Random Forest (bagging) ép ràng buộc cứng trên từng cây độc lập rồi mới
+        trung bình nên suy giảm mạnh hơn nhiều.
+  \item \textbf{Mô hình triển khai là XGBoost} — nay là lựa chọn tốt nhất trên \textbf{cả hai}
+        phương diện:
         \begin{enumerate}[leftmargin=1.2em, itemsep=1pt, topsep=2pt]
-          \item \textbf{Gọn nhẹ:} XGBoost $\approx$0.86 MB so với Random Forest $\approx$5.6 MB
-                ($n=200$ cây) — nằm gọn trong giới hạn GitHub ($<$100 MB) và đóng gói app dễ dàng.
-          \item \textbf{Suy luận nhanh và kiểm soát overfitting:} nạp/dự báo nhanh hơn trong app
-                Streamlit, lại có \textbf{early stopping} (regularization L1/L2 + tự dừng số cây).
+          \item \textbf{Chính xác nhất} trong nhóm mô hình có ràng buộc (Test R\textsuperscript{2}
+                = 0.565, RMSE = 1.895).
+          \item \textbf{Gọn nhẹ và triển khai nhanh:} XGBoost $\approx$0.86 MB so với Random Forest
+                $\approx$56 MB ($n=500$ cây) — nằm gọn trong giới hạn GitHub ($<$100 MB), nạp/dự báo
+                nhanh trong app Streamlit, lại có \textbf{early stopping} (regularization L1/L2 + tự
+                dừng số cây).
         \end{enumerate}
-        Khoảng cách 0.664 vs.\ 0.565 là \textbf{đánh đổi có chủ đích}: chấp nhận giảm một phần
-        độ chính xác để đổi lấy mô hình nhẹ, nhanh, dễ triển khai cho ứng dụng demo.
+        Khác với cách hiểu ``đánh đổi độ chính xác lấy triển khai'', ở đây \textbf{không có đánh
+        đổi}: khi so công bằng, XGBoost vừa chính xác nhất vừa dễ triển khai nhất.
 \end{itemize}
 
 % ─────────────────────────────────────────────────────────────────
@@ -275,28 +274,37 @@ dùng FE (city/district), mục tiêu \texttt{price} gốc, dữ liệu đã l�
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.86\textwidth]{eval_02_test_actual_vs_pred}
-  \caption{Test — Actual vs Predicted (trái) và Residual vs Predicted (phải).
-           Điểm bám sát đường $y=x$, phần dư phân tán quanh 0 (mean $\approx$0) ở vùng giá phổ biến;
-           riêng phân khúc giá cao mô hình có xu hướng \textit{dự báo hụt} nhẹ (xem learning curve — bias)}
+  \caption{Test — Actual vs Predicted (trái) và Residual vs Predicted (phải)}
   \label{fig:test_pred}
 \end{figure}
+
+\noindent \textbf{Nhận xét.} Điểm bám sát đường $y=x$, phần dư phân tán quanh 0
+(mean $\approx$0) ở vùng giá phổ biến; riêng phân khúc giá cao mô hình có xu hướng
+\textit{dự báo hụt} nhẹ (xem learning curve — bias).
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.86\textwidth]{eval_03_residual_learning_curve}
-  \caption{Phân phối phần dư (trái) và Learning curve (phải).
-           Train RMSE và CV RMSE hội tụ khi tăng dữ liệu $\Rightarrow$ không overfit nặng;
-           khoảng cách còn lại là \textit{bias} — cần đặc trưng mới (GPS, NLP mô tả)}
+  \caption{Phân phối phần dư (trái) và Learning curve (phải)}
   \label{fig:lc}
 \end{figure}
+
+\noindent \textbf{Nhận xét.} Train RMSE và CV RMSE hội tụ khi tăng dữ liệu
+$\Rightarrow$ không overfit nặng; khoảng cách còn lại là \textit{bias} — cần bổ sung
+đặc trưng mới (GPS, NLP mô tả).
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.84\textwidth]{model_02_feature_importance}
-  \caption{Feature Importance — RF (MDI, trái) và XGBoost (total gain chuẩn hóa, phải).
-           Sau khi loại \texttt{source}, \textbf{cả hai mô hình đều xếp \texttt{area} dẫn đầu áp đảo}
-           (RF 0.47; XGBoost 0.53), theo sau là số phòng và một số tiện ích (nước nóng, máy giặt) —
-           đúng yếu tố định giá thực tế, xác nhận giá trị của FE (Thực nghiệm A)}
+  \caption{Feature Importance — RF (MDI, trái) và XGBoost (total gain, phải)}
   \label{fig:importance}
 \end{figure}
+
+\noindent \textbf{Nhận xét.} Sau khi loại \texttt{source}, \textbf{Random Forest xếp
+\texttt{area} dẫn đầu áp đảo} (MDI $0.59$), theo sau là số phòng ngủ và khu vực
+(\texttt{city\_Hà Nội}). XGBoost — theo thước đo \textit{total gain} (mức giảm loss tại các
+split, khác bản chất với MDI) — lại nhấn mạnh một số \textbf{cờ tiện ích} (nước nóng, máy giặt)
+bên cạnh \texttt{area} (xếp thứ ba). Dù khác nhau về thứ tự, cả hai đều xác nhận \texttt{area},
+số phòng và nhóm tiện ích là các yếu tố định giá chính — đúng kỳ vọng và khẳng định giá trị của
+FE (Thực nghiệm A).
 

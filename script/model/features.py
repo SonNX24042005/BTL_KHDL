@@ -30,6 +30,7 @@ import re
 
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
 
 # Danh sách tỉnh/thành để tách `city` từ địa chỉ (giống Bước 3 — notebook EDA).
 PROVINCES = [
@@ -195,3 +196,41 @@ def monotone_constraints(col_groups: dict, constrain_area: bool = False) -> dict
     if constrain_area:
         cons["area"] = 1
     return cons
+
+
+class MonotoneRandomForestRegressor(RandomForestRegressor):
+    """RandomForest áp **ràng buộc đơn điệu +1** cho các cờ tiện ích — bản RF
+    "công bằng" để so trực tiếp với XGBoost (cùng yêu cầu: tick thêm tiện ích
+    KHÔNG được làm giảm giá dự báo).
+
+    `bin_cols` = tên 12 cờ tiện ích. monotonic_cst được TÍNH LẠI theo TÊN cột
+    mỗi lần `fit`, nên bền với việc số chiều One-Hot thay đổi giữa các fold CV
+    (vd. 64 chiều trong fold so với 72 chiều trên toàn bộ Train). Yêu cầu
+    preprocessor xuất pandas (`build_preprocessor` đã `set_output`) để thấy tên cột.
+
+    Khai báo đầy đủ chữ ký `__init__` của RandomForestRegressor để `get_params`/
+    `clone` hoạt động đúng trong RandomizedSearchCV (nếu chỉ dùng **kwargs thì
+    sklearn không thấy `n_estimators`, `max_depth`, … khi set_params).
+    """
+
+    def __init__(self, bin_cols=None, n_estimators=100, *, criterion="squared_error",
+                 max_depth=None, min_samples_split=2, min_samples_leaf=1,
+                 min_weight_fraction_leaf=0.0, max_features=1.0, max_leaf_nodes=None,
+                 min_impurity_decrease=0.0, bootstrap=True, oob_score=False,
+                 n_jobs=None, random_state=None, verbose=0, warm_start=False,
+                 ccp_alpha=0.0, max_samples=None):
+        super().__init__(
+            n_estimators=n_estimators, criterion=criterion, max_depth=max_depth,
+            min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
+            min_weight_fraction_leaf=min_weight_fraction_leaf, max_features=max_features,
+            max_leaf_nodes=max_leaf_nodes, min_impurity_decrease=min_impurity_decrease,
+            bootstrap=bootstrap, oob_score=oob_score, n_jobs=n_jobs,
+            random_state=random_state, verbose=verbose, warm_start=warm_start,
+            ccp_alpha=ccp_alpha, max_samples=max_samples)
+        self.bin_cols = bin_cols
+
+    def fit(self, X, y, **fit_kwargs):
+        if self.bin_cols is not None and hasattr(X, "columns"):
+            bs = set(self.bin_cols)
+            self.monotonic_cst = np.array([1 if c in bs else 0 for c in X.columns])
+        return super().fit(X, y, **fit_kwargs)

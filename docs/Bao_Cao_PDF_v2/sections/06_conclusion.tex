@@ -15,9 +15,9 @@ Mô hình triển khai \textbf{XGBoost} đạt:
 \begin{itemize}[leftmargin=*, itemsep=2pt]
   \item \textbf{Test R\textsuperscript{2} = 0.565}; \textbf{Test RMSE = 1.895 triệu/tháng};
         \textbf{Test MAE = 1.26 triệu/tháng}.
-  \item Để tham chiếu: Random Forest chính xác hơn một chút (Test R\textsuperscript{2} = 0.664).
-        Khoảng cách $\approx$0.10 R\textsuperscript{2} là \textit{đánh đổi có chủ đích}:
-        chấp nhận giảm nhẹ độ chính xác để đổi lấy mô hình gọn, nhanh, dễ triển khai.
+  \item So sánh công bằng (cùng ràng buộc đơn điệu cho cả hai mô hình cây): XGBoost
+        \textbf{chính xác hơn} Random Forest (Test R\textsuperscript{2} $0.565$ vs.\ $0.459$) —
+        \textit{không có} đánh đổi độ chính xác lấy khả năng triển khai.
   \item Kích thước $\approx$0.86 MB, triển khai được trong giới hạn GitHub và app Streamlit.
 \end{itemize}
 
@@ -34,12 +34,14 @@ Mô hình triển khai \textbf{XGBoost} đạt:
         Phát hiện này dẫn tới quyết định loại \texttt{source}
         (đánh đổi một phần độ chính xác nhưng đổi lại mô hình \textbf{trung thực và tổng quát hơn}).
 
-  \item \textbf{Mô hình chính xác nhất chưa chắc là mô hình nên triển khai.}
-        Random Forest đạt R\textsuperscript{2} cao nhất (0.664) nhưng nặng $\approx$5.6 MB;
-        nhóm chọn XGBoost (0.565) vì gọn ($\approx$0.86 MB), suy luận nhanh và có early
-        stopping — phù hợp đóng gói trong app Streamlit và giới hạn GitHub. Lựa chọn mô hình
-        triển khai phải cân nhắc cả \textbf{ràng buộc kỹ thuật} (kích thước, tốc độ, bảo trì),
-        không chỉ chỉ số độ chính xác.
+  \item \textbf{So sánh mô hình phải công bằng — áp cùng điều kiện cho mọi ứng viên.}
+        Khi chỉ XGBoost bị ràng buộc đơn điệu còn Random Forest chạy tự do, RF có
+        R\textsuperscript{2} cao hơn — nhưng đó là so sánh khập khiễng: RF ``thắng'' nhờ tự do khai
+        thác đúng những tương quan tiện ích phi lý mà ràng buộc cố ý loại bỏ. Sau khi áp
+        \textbf{cùng} ràng buộc đơn điệu cho cả hai, XGBoost vượt Random Forest
+        ($0.565$ vs.\ $0.459$): nó vừa chính xác nhất vừa gọn nhẹ ($\approx$0.86 MB so với
+        $\approx$56 MB), suy luận nhanh và có early stopping. Lựa chọn mô hình triển khai vẫn phải
+        cân nhắc cả \textbf{ràng buộc kỹ thuật} (kích thước, tốc độ, bảo trì), không chỉ độ chính xác.
 
   \item \textbf{Các quyết định tiền xử lý phải được kiểm chứng bằng thực nghiệm, không chỉ lập luận.}
         Ba ablation study xác nhận:
