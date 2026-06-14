@@ -300,11 +300,10 @@ $\Rightarrow$ không overfit nặng; khoảng cách còn lại là \textit{bias}
   \label{fig:importance}
 \end{figure}
 
-\noindent \textbf{Nhận xét.} Sau khi loại \texttt{source}, \textbf{Random Forest xếp
-\texttt{area} dẫn đầu áp đảo} (MDI $0.59$), theo sau là số phòng ngủ và khu vực
-(\texttt{city\_Hà Nội}). XGBoost — theo thước đo \textit{total gain} (mức giảm loss tại các
-split, khác bản chất với MDI) — lại nhấn mạnh một số \textbf{cờ tiện ích} (nước nóng, máy giặt)
-bên cạnh \texttt{area} (xếp thứ ba). Dù khác nhau về thứ tự, cả hai đều xác nhận \texttt{area},
-số phòng và nhóm tiện ích là các yếu tố định giá chính — đúng kỳ vọng và khẳng định giá trị của
-FE (Thực nghiệm A).
-
+\noindent \textbf{Nhận xét.} Sau khi loại \texttt{source}, cả hai mô hình đều cho thấy
+\texttt{area} là đặc trưng quan trọng nhất và vượt trội rõ rệt. Với Random Forest,
+\texttt{area} đứng đầu với MDI $0.468$, tiếp theo là các tiện ích như
+\texttt{feature\_Có hầm để xe}, \texttt{feature\_Có nước nóng} và số phòng ngủ
+(\texttt{bedrooms}). Với XGBoost, theo thước đo \textit{total gain} chuẩn hóa,
+\texttt{area} cũng dẫn đầu với giá trị $0.532$, sau đó là \texttt{bedrooms},
+\texttt{feature\_Có nước nóng} và \texttt{bathrooms}. Nhìn chung, dù thứ tự các đặc trưng có khác nhau giữa hai mô hình, cả hai đều xác nhận diện tích, số phòng và nhóm tiện ích là các yếu tố chính ảnh hưởng đến giá thuê. Điều này phù hợp với kỳ vọng thực tế và cho thấy các đặc trưng được tạo thêm trong bước FE có đóng góp đáng kể cho mô hình.
