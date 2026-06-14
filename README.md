@@ -1,6 +1,6 @@
 # BTL_KHDL — Phân tích & Dự báo Giá thuê Nhà trọ/Căn hộ theo Khu vực
 
-> Đồ án môn **Nhập môn Khoa học Dữ liệu (IT4142)** — HUST.
+> Đồ án môn **Nhập môn Khoa học Dữ liệu (IT4930)** — HUST.
 > Thu thập dữ liệu cho thuê BĐS từ nhiều nguồn web Việt Nam → làm sạch → EDA → xây dựng &
 > đánh giá mô hình hồi quy dự báo **giá thuê (triệu VNĐ/tháng)** → app web demo.
 

@@ -1,0 +1,143 @@
+%% ============================================================
+%%  SECTION 4 — PHƯƠNG PHÁP (Methodology)  (số liệu: v2)
+%% ============================================================
+\section{Phương pháp}
+\label{sec:method}
+
+\subsection{Định hình bài toán (Reformulate Problem)}
+\label{subsec:formulate}
+
+\subsubsection*{Không gian đầu vào}
+
+Mỗi bản ghi nhà trọ/căn hộ được biểu diễn bằng vector đặc trưng
+$\mathbf{x} \in \mathcal{X}$ gồm ba nhóm:
+
+\begin{itemize}[leftmargin=*, itemsep=3pt]
+  \item \textbf{Số (NUM):}
+        $\mathbf{x}_\text{num} = (\text{area}, \text{bedrooms}, \text{bathrooms})
+        \in \mathbb{R}^3$,
+        sau chuẩn hóa Z-score: $\tilde{\mathbf{x}}_\text{num} \in \mathbb{R}^3$.
+  \item \textbf{Danh mục (CAT):}
+        $(\text{city}, \text{district})$, sau One-Hot Encoding với gộp hạng mục hiếm
+        (\texttt{min\_freq=100}): $\mathbf{x}_\text{cat} \in \{0,1\}^{d_\text{cat}}$,
+        $d_\text{cat} \approx 65$.
+  \item \textbf{Nhị phân (BIN):}
+        12 cờ tiện ích $\mathbf{x}_\text{bin} \in \{0, 1\}^{12}$
+        (có/không có từng tiện ích).
+\end{itemize}
+
+Sau khi kết hợp: $\mathbf{x} \in \mathbb{R}^{d}$, $d \approx 80$.
+
+\subsubsection*{Không gian đầu ra}
+
+$y \in \mathbb{R}^+$ là giá thuê (triệu VNĐ/tháng).
+Đây là bài toán \textbf{Hồi quy} (Regression), không phải phân loại.
+
+\subsubsection*{Mô hình hóa}
+
+Tìm hàm $f_\theta: \mathbb{R}^d \to \mathbb{R}^+$ cực tiểu hàm mất mát trên tập huấn luyện
+$\mathcal{D}_\text{train} = \{(\mathbf{x}_i, y_i)\}_{i=1}^{N}$:
+
+\[
+  \theta^* = \arg\min_\theta \frac{1}{N}\sum_{i=1}^{N} \mathcal{L}(y_i,\, f_\theta(\mathbf{x}_i))
+\]
+
+Với hàm mất mát $\mathcal{L} = (y - \hat{y})^2$ (MSE).
+Hiệu năng đo bằng:
+\begin{align*}
+  \text{MAE} &= \frac{1}{n}\sum|y_i - \hat{y}_i|
+  \quad(\text{triệu VNĐ/tháng — dễ diễn giải thực tế}), \\
+  \text{RMSE} &= \sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2}
+  \quad(\text{phạt nặng sai số lớn — tiêu chí chọn mô hình chính}), \\
+  R^2 &= 1 - \frac{\sum(y_i-\hat{y}_i)^2}{\sum(y_i-\bar{y})^2}
+  \in (-\infty, 1]
+  \quad(\text{tỷ lệ phương sai giải thích}).
+\end{align*}
+
+\subsection{Các phương pháp: từ baseline đến đề xuất}
+\label{subsec:models}
+
+Theo nguyên lý \textbf{No-Free-Lunch} (không có thuật toán nào tối ưu
+cho mọi bài toán), nhóm thử nghiệm 5 thuật toán theo thứ tự tăng dần
+về độ phức tạp — mỗi bước đều có lý do kỹ thuật cụ thể.
+
+\subsubsection*{Phương pháp 1 (Baseline): OLS — Hồi quy tuyến tính thường}
+
+\[
+  \hat{y} = \mathbf{x}^\top\mathbf{w} + b,
+  \quad \mathbf{w}^* = (\mathbf{A}^\top\mathbf{A})^{-1}\mathbf{A}^\top\mathbf{y}
+\]
+
+Nghiệm chuẩn tối thiểu RSS.
+\textbf{Vai trò:} mốc tham chiếu (baseline) để đo mức cải thiện của các phương pháp sau.
+\textbf{Nhược điểm đã biết:} nhạy với đa cộng tuyến (one-hot encoding $\approx$80 chiều có thể gây vấn đề);
+không nắm bắt được quan hệ phi tuyến và tương tác khu vực × diện tích.
+
+\subsubsection*{Phương pháp 2 (Cập nhật từ OLS): Ridge (L2) và LASSO (L1)}
+
+Ridge thêm phạt L2:
+$\mathbf{w}^* = \arg\min\bigl[\|\mathbf{y}-\mathbf{A}\mathbf{w}\|^2 + \lambda\|\mathbf{w}\|_2^2\bigr]$
+— luôn có nghiệm duy nhất, giảm overfitting.
+
+LASSO thêm phạt L1:
+$\mathbf{w}^* = \arg\min\bigl[\|\mathbf{y}-\mathbf{A}\mathbf{w}\|^2 + \lambda\|\mathbf{w}\|_1\bigr]$
+— đẩy nhiều hệ số về đúng 0, tự động chọn đặc trưng.
+
+\textbf{Tại sao tốt hơn OLS:}
+Ridge ổn định hơn khi có đa cộng tuyến; LASSO loại bỏ được các chiều One-Hot
+hiếm không có tín hiệu giá (đẩy nhiều hệ số về đúng 0).
+Tinh chỉnh $\alpha$ bằng GridSearchCV ($\alpha \in \{0.001, 0.01, 0.1, 1, 10, 100\}$).
+Best: Ridge $\alpha = 1.0$; LASSO $\alpha = 0.001$.
+
+\subsubsection*{Phương pháp 3 (Phi tuyến): Random Forest (Bagging)}
+
+Tổ hợp $T$ cây quyết định huấn luyện trên bootstrap sample:
+$\hat{y} = \frac{1}{T}\sum_{t=1}^{T}h_t(\mathbf{x})$.
+Mỗi nút chỉ xét $\sqrt{d}$ đặc trưng ngẫu nhiên (ngẫu nhiên hóa thêm để giảm tương quan giữa cây).
+
+\textbf{Tại sao tốt hơn tuyến tính:}
+Nắm bắt được tương tác phi tuyến (khu vực × diện tích);
+bagging giảm phương sai — ổn định với dữ liệu nhiễu.
+Tinh chỉnh bằng RandomizedSearchCV.
+Best: 200 cây, depth 10, \texttt{min\_split=5}.
+
+\subsubsection*{Phương pháp đề xuất: XGBoost (Gradient Boosting với Regularization)}
+
+Boosting: mỗi cây $t$ sửa residual của tổ hợp trước theo hướng gradient âm:
+\[
+  F_t(\mathbf{x}) = F_{t-1}(\mathbf{x}) + \eta\, h_t(\mathbf{x}),
+  \quad h_t = \arg\min_h \sum_i \mathcal{L}'(y_i, F_{t-1}(\mathbf{x}_i))\cdot h(\mathbf{x}_i)
+\]
+
+Hàm mục tiêu XGBoost = loss + regularization (L1 \texttt{reg\_alpha} + L2 \texttt{reg\_lambda}).
+
+\textbf{Tại sao chọn XGBoost để triển khai} — dù Random Forest chính xác hơn một chút trên
+chỉ số (Mục~\ref{subsec:main_results}), XGBoost thắng ở các tiêu chí quan trọng cho một
+\textit{ứng dụng thực tế}: gọn nhẹ, suy luận nhanh và kiểm soát overfitting tốt.
+
+\begin{table}[H]
+  \centering
+  \caption{So sánh Random Forest và XGBoost — vì sao triển khai XGBoost}
+  \label{tab:rf_vs_xgb}
+  \begin{tabularx}{\textwidth}{@{}L{3.4cm} X X@{}}
+    \toprule
+    \textbf{Tiêu chí} & \textbf{Random Forest} & \textbf{XGBoost (triển khai)} \\
+    \midrule
+    Độ chính xác (Test R\textsuperscript{2}) & \textbf{0.664} & 0.565 \\
+    Kích thước mô hình & $\approx$5.6 MB (200 cây) & \textbf{$\approx$0.86 MB} \\
+    Triển khai (GitHub <100MB, app) & Nặng hơn & \textbf{Gọn, suy luận nhanh} \\
+    Kiểm soát overfitting & Bagging & Regularization + \textbf{early stopping} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+XGBoost nhỏ hơn Random Forest gần 7 lần, nạp và dự báo nhanh hơn trong app Streamlit,
+lại có cơ chế regularization (L1/L2) cùng early stopping giúp tự chọn số cây — phù hợp cho
+một ứng dụng demo cần triển khai gọn nhẹ. Đây là \textit{đánh đổi có chủ đích}: chấp nhận
+giảm nhẹ độ chính xác để đổi lấy khả năng triển khai.
+
+\textbf{Quy trình tinh chỉnh:}
+(1) RandomizedSearchCV dò lưới (\texttt{lr, depth, subsample, colsample, reg\_alpha, reg\_lambda});
+(2) refit cấu hình tốt nhất với \texttt{early\_stopping\_rounds=50} trên Validation
+($n_\text{estimators}=2000$ làm trần; tự dừng ở \textbf{126 cây}).
+Best: lr=0.05, depth=10, subsample=0.6, colsample=1.0, $\lambda=10$, $\alpha=1$.

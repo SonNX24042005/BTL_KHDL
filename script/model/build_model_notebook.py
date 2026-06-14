@@ -32,7 +32,7 @@ cells = []
 # ============================================================================
 cells.append(md(r"""# Bước 4 — Xây dựng Mô hình Học máy (Machine Learning)
 
-**Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4142)*
+**Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4930)*
 
 Notebook thực hiện **Bước 4** trong vòng đời Khai phá Tri thức (Slide L7): từ dữ liệu đã làm
 sạch (Bước 2 — notebook `02_data_cleaning.ipynb`) và những hiểu biết từ EDA (Bước 3 — notebook

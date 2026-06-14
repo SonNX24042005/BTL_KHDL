@@ -1,5 +1,5 @@
 # ============================================================================
-# Đồ án KHDL (IT4142) — Phân tích & dự báo giá thuê nhà trọ/căn hộ theo khu vực
+# Đồ án KHDL (IT4930) — Phân tích & dự báo giá thuê nhà trọ/căn hộ theo khu vực
 # Cài đặt:  pip install -r requirements.txt
 # (Khuyến nghị Python 3.12 + môi trường ảo conda/venv — xem README.md)
 # ============================================================================

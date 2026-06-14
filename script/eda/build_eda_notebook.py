@@ -1,6 +1,6 @@
 """
 Sinh notebook EDA (Bước 3) — phiên bản v2 — cho dự án "Phân tích giá thuê nhà
-trọ/căn hộ theo khu vực" (IT4142).
+trọ/căn hộ theo khu vực" (IT4930).
 
 Kế thừa cấu trúc & triết lý trực quan hóa từ v1 (v1/script/eda/build_eda_notebook.py),
 ĐIỀU CHỈNH cho luồng v2:
@@ -34,7 +34,7 @@ cells = []
 # ============================================================================
 cells.append(md(r"""# Bước 3 — Phân tích Khám phá Dữ liệu (EDA) & Trực quan hóa
 
-**Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4142)*
+**Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4930)*
 
 Notebook thực hiện **Bước 3** trong vòng đời Khai phá Tri thức (Slide L4–L6): thống kê
 mô tả, phân tích đơn biến / đa biến, trực quan hóa, phân cụm K-Means và giảm chiều PCA —

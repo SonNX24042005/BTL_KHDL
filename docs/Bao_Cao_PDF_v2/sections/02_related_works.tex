@@ -1,0 +1,92 @@
+%% ============================================================
+%%  SECTION 2 — CÁC NGHIÊN CỨU LIÊN QUAN (Related Works)
+%%  Nguồn: Paper, GitHub, Kaggle, Medium
+%%  Mỗi nghiên cứu: nguồn dữ liệu + phương pháp tốt nhất (SotA)
+%%  Mục tiêu: xây dựng baseline + xác định khoảng trống (research gap)
+%% ============================================================
+\section{Các nghiên cứu / giải pháp đã có}
+\label{sec:related}
+
+\subsection{Các nghiên cứu quốc tế về dự báo giá bất động sản}
+
+\subsubsection*{Mô hình Hedonic Pricing (nền tảng lý thuyết)}
+
+Phương pháp \textbf{Hedonic Pricing} \cite{rosen1974hedonic} coi giá bất động sản là hàm
+của tập hợp đặc điểm vật lý và vị trí: $P = f(\text{diện tích, phòng, khu vực, tiện ích}, \ldots)$.
+Đây là nền tảng lý thuyết được hầu hết các nghiên cứu dự báo giá áp dụng,
+trong đó OLS là mô hình baseline cổ điển nhất.
+\textbf{Nguồn dữ liệu:} dữ liệu giao dịch nhà đất từ địa chính/môi giới.
+\textbf{Hạn chế:} giả định quan hệ tuyến tính, nhạy cảm với đa cộng tuyến và ngoại lệ.
+
+\subsubsection*{Kaggle — Ames Housing Dataset}
+
+Bộ dữ liệu Ames Iowa (De Cock, 2011)~\cite{decock2011ames} với 2.930 giao dịch và 80 đặc trưng
+đã trở thành chuẩn mực (benchmark) cho bài toán dự báo \textbf{giá mua bán} nhà.
+Các giải pháp top Kaggle sử dụng \textbf{XGBoost/LightGBM + Feature Engineering} đạt
+RMSE $\approx$ 0.10--0.12 (log-scale).
+\textbf{Khoảng trống:} bộ dữ liệu này về giá mua bán (không phải cho thuê), một thành phố nhỏ
+của Mỹ, và số lượng bản ghi hạn chế.
+
+\subsubsection*{Nghiên cứu ML đa mô hình cho thị trường cho thuê}
+
+Yılmaz \& Yakut (2022)~\cite{yilmaz2022rental} so sánh OLS, Ridge, LASSO, Random Forest và
+Gradient Boosting trên dữ liệu cho thuê nhà ở Thổ Nhĩ Kỳ (12.000 bản ghi).
+Kết quả: \textbf{Gradient Boosting đạt R\textsuperscript{2} $\approx$ 0.82} trên dữ liệu
+một thành phố có địa chỉ chính xác (GPS).
+\textbf{Phương pháp tốt nhất hiện tại (SotA):} Gradient Boosting kết hợp
+đặc trưng vị trí không gian (tọa độ GPS, khoảng cách tới trung tâm).
+
+\subsection{Các nghiên cứu / dự án về thị trường Việt Nam}
+
+\subsubsection*{Dự án GitHub về giá nhà TP. Hồ Chí Minh}
+
+Một số dự án mã nguồn mở trên GitHub~\cite{github_hcm_housing} thu thập dữ liệu bất động sản
+TP.HCM từ batdongsan.com.vn và áp dụng Random Forest / XGBoost.
+\textbf{Nguồn dữ liệu:} 2.000--8.000 bản ghi, chủ yếu TP.HCM, chú trọng giá \textbf{mua bán}.
+\textbf{Kết quả điển hình:} R\textsuperscript{2} $\approx$ 0.70--0.75 (có đặc trưng GPS).
+\textbf{Hạn chế:} quy mô nhỏ, một thành phố, không bao gồm thị trường \textbf{cho thuê}.
+
+\subsubsection*{Kaggle — Vietnam Housing Dataset}
+
+Một số bộ dữ liệu trên Kaggle về nhà đất Việt Nam (2.000--10.000 bản ghi) được cộng đồng
+sử dụng để so sánh thuật toán, nhưng chủ yếu tập trung vào \textbf{giá mua bán}
+và không bao gồm thông tin tiện ích chi tiết hay dữ liệu đa tỉnh thành.
+
+\subsection{Khoảng trống nghiên cứu (Research Gap)}
+
+\begin{table}[H]
+  \centering
+  \caption{So sánh nghiên cứu hiện có và đồ án này}
+  \label{tab:gap}
+  \small
+  \begin{tabularx}{\textwidth}{@{}L{3.8cm} C{1.8cm} C{2.0cm} C{2.2cm} C{3.0cm}@{}}
+    \toprule
+    \textbf{Nghiên cứu} &
+    \textbf{Loại thị trường} &
+    \textbf{Quy mô} &
+    \textbf{Phạm vi địa lý} &
+    \textbf{Phương pháp tốt nhất} \\
+    \midrule
+    Ames Housing (Kaggle) &
+      Mua bán & 2.930 & 1 thành phố & XGBoost + FE \\
+    Yılmaz \& Yakut (2022) &
+      Cho thuê & 12.000 & 1 thành phố & Gradient Boosting + GPS \\
+    Dự án GitHub VN &
+      Mua bán & $<$10.000 & TP.HCM & Random Forest \\
+    \midrule
+    \textbf{Đồ án này} &
+      \textbf{Cho thuê} & \textbf{133.586} & \textbf{19 tỉnh/thành} &
+      XGBoost + FE đa nguồn \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\textbf{Khoảng trống mà đồ án này lấp đầy:}
+\begin{itemize}[leftmargin=*, itemsep=3pt]
+  \item Chưa có nghiên cứu nào về thị trường \textbf{cho thuê} quy mô lớn đa tỉnh
+        tại Việt Nam (hầu hết tập trung vào mua bán hoặc một thành phố).
+  \item Không có pipeline \textbf{tích hợp đa nguồn} (10 nguồn) với lược đồ thống nhất
+        và xử lý chất lượng dữ liệu có hệ thống.
+  \item Chưa có phân tích kiểm chứng quyết định thiết kế bằng \textbf{thực nghiệm đối sánh}
+        (ablation study) công khai cho bài toán giá thuê Việt Nam.
+\end{itemize}

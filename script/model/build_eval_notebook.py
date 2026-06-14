@@ -32,7 +32,7 @@ cells = []
 # ============================================================================
 cells.append(md(r"""# Bước 5 — Đánh giá & Lựa chọn Mô hình (Slide L12)
 
-**Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4142)*
+**Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4930)*
 
 Tiếp nối **Bước 4** (đã huấn luyện + tinh chỉnh 5 mô hình — notebook `04_modeling.ipynb`), Bước 5
 **đánh giá nghiêm ngặt** để chốt mô hình cuối, theo đúng quy trình chuẩn (Slide L12):

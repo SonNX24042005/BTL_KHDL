@@ -1,6 +1,6 @@
 """
 Sinh notebook Bước 2 — TÍCH HỢP & LÀM SẠCH DỮ LIỆU (ETL) cho dự án
-"Phân tích & dự báo giá thuê nhà trọ/căn hộ theo khu vực" (IT4142).
+"Phân tích & dự báo giá thuê nhà trọ/căn hộ theo khu vực" (IT4930).
 
 Notebook được dựng bằng nbformat rồi thực thi bằng nbconvert để nhúng sẵn kết quả +
 biểu đồ ⇒ khi nộp bài chỉ cần mở v2/notebooks/02_data_cleaning.ipynb.
@@ -29,7 +29,7 @@ cells = []
 # ============================================================================
 cells.append(md(r"""# Bước 2 — Tích hợp & Làm sạch Dữ liệu (ETL)
 
-**Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4142)*
+**Đề tài:** Phân tích & dự báo giá thuê nhà trọ/căn hộ **theo khu vực** — *Nhập môn Khoa học Dữ liệu (IT4930)*
 
 Notebook thực hiện **Bước 2** trong vòng đời Khai phá Tri thức (Slide L3):
 *Extract → Transform → Load*. Khâu Thu thập+Xử lý chiếm **70–90%** công sức dự án

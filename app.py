@@ -1,7 +1,7 @@
 """
 Bước 6 — Hệ thống thử nghiệm: App web dự báo giá thuê nhà trọ/căn hộ (Streamlit).
 
-Đề tài: "Phân tích & dự báo giá thuê nhà trọ/căn hộ theo khu vực" — IT4142.
+Đề tài: "Phân tích & dự báo giá thuê nhà trọ/căn hộ theo khu vực" — IT4930.
 
 App nạp **mô hình triển khai** đã chốt ở Bước 4–5 (`models/model_best.pkl` = XGBoost, refit trên
 Train+Val) và **dùng chung feature engineering** với lúc huấn luyện (`script/model/features.py`)
@@ -14,7 +14,9 @@ import json
 import sys
 from pathlib import Path
 
+import altair as alt
 import joblib
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -115,6 +117,44 @@ def predict_price(area, bedrooms, bathrooms, city, district, amenities):
     return float(model.predict(X)[0])
 
 
+@st.cache_data
+def load_pdp_base(n=1200):
+    """Mẫu phòng thực tế (đã FE) để tính Partial Dependence — cache 1 lần.
+
+    Dự báo điểm cho MỘT phòng dao động lên/xuống cục bộ theo diện tích vì mô hình cây
+    là hàm bậc thang và `area` CỐ Ý không ràng buộc đơn điệu (ràng buộc area làm R²
+    tụt 0.57→0.42). PDP khắc phục bằng cách lấy trung bình dự báo trên nhiều phòng thật.
+    """
+    cols = F.NUM_COLS + F.CAT_COLS + BIN_COLS
+    df = F.add_engineered(pd.read_csv(DATA, low_memory=False)).dropna(subset=["area"])
+    if len(df) > n:
+        df = df.sample(n, random_state=42)
+    return df[cols].reset_index(drop=True)
+
+
+@st.cache_data
+def compute_pdp_area(city, n_grid=30):
+    """Partial Dependence của `area`: với mỗi mức diện tích trên lưới, đặt area=mức đó cho
+    TOÀN BỘ mẫu rồi lấy trung bình dự báo → marginalize các đặc trưng khác. Lọc theo thành
+    phố người dùng nếu đủ mẫu (≥50). Cuối cùng phủ Isotonic Regression để đường xu hướng
+    đơn điệu không-giảm (khử dao động cục bộ + bướu ở vùng diện tích lớn dữ liệu thưa).
+    """
+    from sklearn.isotonic import IsotonicRegression
+    base = load_pdp_base()
+    sub = base[base["city"] == city]
+    if len(sub) < 50:
+        sub = base
+    amin, amax = assets["ranges"]["area"]
+    grid = np.linspace(amin, amax, n_grid)
+    raw = []
+    for a in grid:
+        tmp = sub.copy()
+        tmp["area"] = float(a)
+        raw.append(float(model.predict(tmp).mean()))
+    smooth = IsotonicRegression(increasing=True, out_of_bounds="clip").fit_transform(grid, raw)
+    return grid.tolist(), [float(v) for v in smooth]
+
+
 def show_img(path, caption=None):
     if Path(path).exists():
         st.image(str(path), caption=caption, width="stretch")
@@ -124,7 +164,7 @@ def show_img(path, caption=None):
 
 # ================================ HEADER ===================================
 st.title("🏠 Dự báo Giá thuê Nhà trọ / Căn hộ theo Khu vực")
-st.caption("Đồ án Nhập môn Khoa học Dữ liệu (IT4142) — HUST · Mô hình: "
+st.caption("Đồ án Nhập môn Khoa học Dữ liệu (IT4930) — HUST · Mô hình: "
            f"**{meta['best_model']}** · "
            f"Test R² = {TEST.get('Test_R2', float('nan')):.3f}, "
            f"MAE = {TEST.get('Test_MAE', float('nan')):.2f} triệu/tháng")
@@ -187,6 +227,30 @@ with tab_predict:
             st.bar_chart(comp, horizontal=True, color="#2D5BFF")
             if region:
                 st.caption(f"*(Dựa trên {region['n']:,} tin đăng tại khu vực này.)*")
+
+        # ── Partial Dependence: xu hướng giá TRUNG BÌNH theo diện tích (đã làm trơn) ──
+        with st.expander("📈 Xu hướng giá trung bình theo diện tích (Partial Dependence)"):
+            grid, means = compute_pdp_area(city)
+            pdp_df = pd.DataFrame({"area": grid, "price": means})
+            line = alt.Chart(pdp_df).mark_line(color="#2D5BFF", strokeWidth=2.5).encode(
+                x=alt.X("area:Q", title="Diện tích (m²)"),
+                y=alt.Y("price:Q", title="Giá TB dự báo (triệu/tháng)",
+                        scale=alt.Scale(zero=False)),
+                tooltip=[alt.Tooltip("area:Q", title="m²", format=".0f"),
+                         alt.Tooltip("price:Q", title="Giá TB", format=".2f")])
+            you = alt.Chart(pd.DataFrame({"area": [area], "price": [price]})).mark_point(
+                color="#E5446D", size=150, filled=True).encode(
+                x="area:Q", y="price:Q",
+                tooltip=[alt.Tooltip("area:Q", title="Phòng của bạn (m²)", format=".0f"),
+                         alt.Tooltip("price:Q", title="Giá dự báo", format=".2f")])
+            st.altair_chart(line + you, use_container_width=True)
+            st.caption(
+                "Đường xanh = giá **trung bình** mô hình dự báo khi quét diện tích trên nhiều "
+                "phòng thật (marginalize các đặc trưng khác, rồi làm trơn **đơn điệu** bằng "
+                "isotonic). Chấm đỏ = dự báo **thực tế** cho phòng của bạn (có thể lệch khỏi "
+                "đường vì dự báo cho *một* phòng nhấp nhô cục bộ: mô hình cây là hàm bậc thang "
+                "và `area` cố ý không ràng buộc đơn điệu để giữ độ chính xác). Đường xu hướng "
+                "cho thấy: diện tích lớn hơn → giá trung bình cao hơn (hoặc không thấp đi).")
 
         st.info("ℹ️ Mô hình **không dùng** 'nguồn web' làm đặc trưng — dự báo chỉ dựa trên "
                 "đặc điểm thật của phòng (diện tích, khu vực, tiện ích). Tiện ích được huấn luyện "

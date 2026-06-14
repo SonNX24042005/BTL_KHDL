@@ -1,0 +1,80 @@
+%% ============================================================
+%%  SECTION 6 — KẾT LUẬN (Conclusion)  (số liệu: v2)
+%% ============================================================
+\section{Kết luận}
+\label{sec:conclusion}
+
+\subsection{Tóm tắt quá trình và kết quả}
+
+Đồ án đã hoàn thành trọn vẹn quy trình Khoa học Dữ liệu (KDD) 6 bước:
+thu thập 133.586 bản ghi từ 10 nguồn, tích hợp về lược đồ thống nhất,
+làm sạch và phân tích khám phá, xây dựng và đánh giá 5 mô hình hồi quy,
+kết thúc bằng ứng dụng demo Streamlit.
+
+Mô hình triển khai \textbf{XGBoost} đạt:
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item \textbf{Test R\textsuperscript{2} = 0.565}; \textbf{Test RMSE = 1.895 triệu/tháng};
+        \textbf{Test MAE = 1.26 triệu/tháng}.
+  \item Để tham chiếu: Random Forest chính xác hơn một chút (Test R\textsuperscript{2} = 0.664).
+        Khoảng cách $\approx$0.10 R\textsuperscript{2} là \textit{đánh đổi có chủ đích}:
+        chấp nhận giảm nhẹ độ chính xác để đổi lấy mô hình gọn, nhanh, dễ triển khai.
+  \item Kích thước $\approx$0.86 MB, triển khai được trong giới hạn GitHub và app Streamlit.
+\end{itemize}
+
+\subsection{Bài học kinh nghiệm và ý nghĩa}
+
+\begin{enumerate}[leftmargin=*, itemsep=5pt]
+  \item \textbf{Diện tích và khu vực là yếu tố định giá mạnh nhất.}
+        Feature Importance của cả RF lẫn XGBoost đều xếp \texttt{area}
+        và \texttt{city}/\texttt{district} dẫn đầu sau khi loại \texttt{source}.
+
+  \item \textbf{Nghịch lý Simpson là bài học về phân tích dữ liệu nghiêm túc.}
+        Tương quan âm toàn cục giữa tiện ích và giá không phản ánh quan hệ nhân quả —
+        đây là confounding variable do cấu trúc nguồn.
+        Phát hiện này dẫn tới quyết định loại \texttt{source}
+        (đánh đổi một phần độ chính xác nhưng đổi lại mô hình \textbf{trung thực và tổng quát hơn}).
+
+  \item \textbf{Mô hình chính xác nhất chưa chắc là mô hình nên triển khai.}
+        Random Forest đạt R\textsuperscript{2} cao nhất (0.664) nhưng nặng $\approx$5.6 MB;
+        nhóm chọn XGBoost (0.565) vì gọn ($\approx$0.86 MB), suy luận nhanh và có early
+        stopping — phù hợp đóng gói trong app Streamlit và giới hạn GitHub. Lựa chọn mô hình
+        triển khai phải cân nhắc cả \textbf{ràng buộc kỹ thuật} (kích thước, tốc độ, bảo trì),
+        không chỉ chỉ số độ chính xác.
+
+  \item \textbf{Các quyết định tiền xử lý phải được kiểm chứng bằng thực nghiệm, không chỉ lập luận.}
+        Ba ablation study xác nhận:
+        \begin{itemize}[itemsep=2pt]
+          \item FE (tách khu vực từ địa chỉ) giảm RMSE 3.5--14.6\%;
+                PCA không giúp ích với bộ dữ liệu này.
+          \item Log-transform mục tiêu \textit{không} tăng hiệu năng theo tiêu chí RMSE/R\textsuperscript{2}
+                và gây underweight phân khúc giá cao.
+          \item Lọc ngoại lệ giảm RMSE 79.0\% trên vùng giá mục tiêu.
+        \end{itemize}
+
+  \item \textbf{Quan hệ phi tuyến mạnh.}
+        Mô hình cây (R\textsuperscript{2} $\approx$ 0.57--0.66) vượt xa tuyến tính
+        (R\textsuperscript{2} $\approx$ 0.19), xác nhận tương tác
+        khu vực $\times$ diện tích không thể biểu diễn bằng hàm tuyến tính đơn giản.
+
+  \item \textbf{Giới hạn bởi bias (không phải variance).}
+        Learning curve cho thấy thêm dữ liệu cùng loại giúp ít —
+        cần đặc trưng \textit{mới} (GPS, khoảng cách, NLP mô tả) để tăng R\textsuperscript{2}.
+\end{enumerate}
+
+\subsection{Hướng phát triển (Future Work)}
+
+\begin{itemize}[leftmargin=*, itemsep=3pt]
+  \item \textbf{Bổ sung và chuẩn hóa dữ liệu tiện ích} đồng đều giữa các nguồn để
+        tăng chất lượng đặc trưng nhị phân, từ đó cải thiện độ chính xác mô hình.
+  \item \textbf{Đặc trưng vị trí không gian:} tọa độ GPS, khoảng cách đến trung tâm,
+        tiện ích công cộng (trường học, bệnh viện, metro) — các nghiên cứu quốc tế
+        cho thấy đây là yếu tố tăng R\textsuperscript{2} mạnh nhất.
+  \item \textbf{Khai thác mô tả dạng văn bản:} NLP (TF-IDF, BERT) trên trường
+        \texttt{description} để trích xuất tín hiệu giá (tầng, hướng, view, trang trí…).
+  \item \textbf{Cân bằng dữ liệu địa lý:} thu thập thêm mẫu ngoài Hà Nội
+        để mô hình đại diện tốt hơn cho các tỉnh thành khác.
+  \item \textbf{Cập nhật định kỳ:} triển khai pipeline tự động cào và retrain
+        hàng tháng, theo dõi data drift khi thị trường thay đổi.
+  \item \textbf{Mô hình phức tạp hơn:} LightGBM, CatBoost, hoặc deep learning
+        (TabNet) nếu bổ sung được đặc trưng GPS và văn bản.
+\end{itemize}

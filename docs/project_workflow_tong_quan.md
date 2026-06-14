@@ -1,6 +1,6 @@
 # QUY TRÌNH & HƯỚNG DẪN TỔNG QUAN DỰ ÁN BÀI TẬP LỚN KHOA HỌC DỮ LIỆU
 ## Đề tài: Phân tích giá thuê nhà trọ/căn hộ theo khu vực
-### Môn học: Nhập môn Khoa học Dữ liệu (IT4142)
+### Môn học: Nhập môn Khoa học Dữ liệu (IT4930)
 
 > 📖 Đây là **bản tổng quan** — tóm tắt quy trình và yêu cầu.
 > Xem thêm [bản chi tiết](project_workflow_chi_tiet.md) để có code mẫu và hướng dẫn từng bước.
