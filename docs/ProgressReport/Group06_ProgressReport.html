@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Group06_ProgressReport</title>
+<style>
+  @page { size: A4; margin: 14mm 16mm 13mm 16mm; }
+  body { font-family: "Times New Roman", serif; font-size: 11pt; line-height: 1.3; color: #000; margin: 0; }
+  h1 { font-size: 15pt; text-align: center; margin: 0 0 2px; }
+  .sub { text-align: center; font-size: 10.5pt; margin-bottom: 4px; }
+  .meta { font-size: 10pt; border: 1px solid #999; padding: 4px 8px; margin: 6px 0 6px; }
+  h2 { font-size: 12.5pt; margin: 9px 0 4px; border-bottom: 1px solid #444; padding-bottom: 1px; }
+  h3 { font-size: 11pt; margin: 6px 0 2px; }
+  h2, h3 { break-after: avoid; page-break-after: avoid; }
+  table, img { break-inside: avoid; }
+  p { margin: 3px 0; text-align: justify; }
+  ul, ol { margin: 2px 0; padding-left: 20px; }
+  li { margin: 1px 0; text-align: justify; }
+  table { border-collapse: collapse; font-size: 9.8pt; margin: 4px auto; }
+  th, td { border-top: 1px solid #666; border-bottom: 1px solid #666; padding: 2px 7px; vertical-align: top; }
+  th { background: #eee; }
+  td.n, th.n { text-align: right; }
+  .cap { text-align: center; font-size: 9.5pt; font-style: italic; margin: 2px 0 5px; }
+  img { display: block; margin: 3px auto 0; }
+  code { font-family: Consolas, monospace; font-size: 9.3pt; }
+  a { color: #0645ad; }
+  .two { display: flex; gap: 12px; align-items: flex-start; }
+  .two > div { flex: 1; }
+</style>
+</head>
+<body>
+
+<h1>BÁO CÁO TIẾN ĐỘ GIỮA KỲ</h1>
+<div class="sub"><b>Dự báo giá thuê nhà trọ / căn hộ theo khu vực bằng các mô hình hồi quy</b></div>
+<div class="meta">
+  <b>Nhóm 6</b> &nbsp;|&nbsp; <b>Thành viên:</b> Trịnh Thành An (2023681), Đỗ Danh Dũng (20235685), Nguyễn Mạnh Đức (20235681),
+  Văn Thành Đạt (2023677), Đinh Xuân Thái Dương (20235689)<br>
+  <b>Mã nguồn:</b> <a href="https://github.com/chuotchuilacduong/Machine_Learning_20261">https://github.com/chuotchuilacduong/Machine_Learning_20261</a>
+</div>
+
+<h2>1. Mô tả bài toán</h2>
+<p>Thị trường cho thuê phòng trọ/căn hộ tại Việt Nam thiếu một công cụ tham chiếu giá khách quan. Nhóm xây dựng mô hình
+<b>hồi quy có giám sát</b> dự báo <b>giá thuê (triệu VNĐ/tháng)</b> của một tin đăng.
+<b>Đầu vào:</b> diện tích, số phòng ngủ, số phòng tắm, khu vực (thành phố, quận/huyện) và 12 cờ tiện ích nhị phân
+(nội thất, gác, máy lạnh, máy giặt, thang máy, không chung chủ, bảo vệ 24/24, hầm để xe, ...).
+<b>Đầu ra:</b> giá thuê <code>price</code>. <b>Độ đo:</b> MAE, RMSE (triệu VNĐ) và R²; mô hình được chọn theo RMSE trên tập Validation.</p>
+
+<h2>2. Dữ liệu và xử lý dữ liệu</h2>
+<h3>2.1. Thu thập</h3>
+<p>Không có bộ dữ liệu cho thuê đa nguồn sẵn có, nên nhóm tự <b>thu thập (web scraping)</b> và tổng hợp từ <b>10 nguồn</b>:
+5 trang tin đăng (chothuephongtro, nhatot, chothuenhadattoanvn, phongtro123, lozido), nhóm Facebook và 4 bộ dữ liệu công khai
+trên GitHub (Hà Nội, TP.HCM, Đà Nẵng, Housing) — tổng cộng <b>357.851 bản ghi thô</b> với định dạng khác nhau.
+Các nguồn được hợp nhất về một <b>lược đồ chung</b>: <code>price, area, bedrooms, bathrooms, full_address, posted_date, source</code>
+và 12 cờ <code>feature_*</code>.</p>
+
+<div class="two">
+<div style="flex:0.95">
+<img src="../Bao_Cao_PDF_v2/images/cleaning_05_cleaning_funnel.png" style="width:100%">
+<div class="cap">Hình 1. Số bản ghi qua từng bước làm sạch.</div>
+</div>
+<div style="flex:1.05">
+<table>
+  <tr><th>Nguồn</th><th class="n">Số bản ghi</th><th class="n">Tỷ lệ</th></tr>
+  <tr><td>chothuephongtro</td><td class="n">95.086</td><td class="n">71,2%</td></tr>
+  <tr><td>nhatot</td><td class="n">9.920</td><td class="n">7,4%</td></tr>
+  <tr><td>chothuenhadattoanvn</td><td class="n">9.866</td><td class="n">7,4%</td></tr>
+  <tr><td>github (hcm/hn/dn/housing)</td><td class="n">13.966</td><td class="n">10,5%</td></tr>
+  <tr><td>phongtro123 / lozido / facebook</td><td class="n">4.748</td><td class="n">3,6%</td></tr>
+  <tr><th>Tổng sau làm sạch</th><th class="n">133.586</th><th class="n">100%</th></tr>
+</table>
+<div class="cap">Bảng 1. Phân bố bản ghi sạch theo nguồn.</div>
+</div>
+</div>
+
+<h3>2.2. Làm sạch (Hình 1)</h3>
+<ol>
+  <li><b>Chuẩn hóa kiểu:</b> tách giá/diện tích từ chuỗi văn bản (“3,5 triệu”, “25m2”) bằng biểu thức chính quy; bỏ tin
+      <code>price ≤ 0</code> hoặc <code>area ≤ 0</code> (tin “giá thỏa thuận”) → 357.664.</li>
+  <li><b>Tách tin cho thuê:</b> nhiều nguồn trộn lẫn tin bán và tin thuê (phân phối giá hai đỉnh); loại tin bán → 147.955.</li>
+  <li><b>Lọc ngoại lệ:</b> giữ <code>price</code> 0,5–17 triệu, <code>area</code> 8–180 m², số phòng hợp lệ
+      (dữ liệu thô có giá tới 10 tỷ/tháng, diện tích 1.000 m²) → 134.585.</li>
+  <li><b>Khử trùng lặp</b> (cùng tin đăng ở nhiều nguồn) → <b>133.586 bản ghi sạch</b>.</li>
+</ol>
+
+<h3>2.3. Các vấn đề chất lượng và cách xử lý</h3>
+<table style="width:100%">
+  <tr><th style="width:23%">Vấn đề</th><th style="width:37%">Phát hiện</th><th>Xử lý</th></tr>
+  <tr><td>Giá trị thiếu</td><td><code>detail_link</code> 96,4%, <code>description</code> 80,4%, <code>district</code> 2,2%</td>
+      <td>Bỏ 2 cột thiếu nhiều; quận thiếu gán nhãn “(không rõ)”.</td></tr>
+  <tr><td>Ngày đăng sai</td><td>46% <code>posted_date</code> mang ngày ở tương lai (giá trị mặc định của web)</td>
+      <td>Không dùng <code>posted_date</code> làm đặc trưng.</td></tr>
+  <tr><td>Mất cân bằng nguồn</td><td>chothuephongtro chiếm 71,2%; Hà Nội chiếm 88,0% bản ghi</td>
+      <td>Ghi nhận là giới hạn; cuối kỳ đánh giá sai số theo từng thành phố.</td></tr>
+  <tr><td>Tiện ích thiếu không ngẫu nhiên (MNAR)</td>
+      <td>Mỗi nguồn chỉ ghi nhận một phần tiện ích (0–11/12 cờ); giá trị 0 có thể là “không có” hoặc “không ghi”.
+          Gây <b>nghịch lý Simpson</b>: toàn cục, có máy lạnh lại rẻ hơn 0,73 tr (do nguồn giá cao nhatot ít ghi tiện ích).</td>
+      <td>Đánh dấu cờ không quan sát được của từng nguồn là thiếu; <b>loại <code>source</code></b> khỏi đặc trưng
+          vì là artifact thu thập, không phải yếu tố định giá.</td></tr>
+</table>
+<div class="cap">Bảng 2. Vấn đề chất lượng dữ liệu.</div>
+
+<h3>2.4. Tạo đặc trưng và chia dữ liệu</h3>
+<p>Tách <code>city</code> và <code>district</code> từ địa chỉ tự do (353 quận/huyện); One-Hot cho khu vực, gộp hạng mục hiếm
+(&lt; 10 mẫu) để tránh đặc trưng quá thưa → 80 chiều đặc trưng; chuẩn hóa Z-score cho biến số. Toàn bộ được đóng gói trong
+<code>sklearn Pipeline</code> (fit chỉ trên tập Train để tránh rò rỉ dữ liệu). Giá thuê lệch phải (trung bình 4,80 tr, trung vị 4,0 tr,
+skew = 1,55). Dữ liệu chia <b>Train / Validation / Test = 70/15/15</b> (93.563 / 19.985 / 20.038 bản ghi).</p>
+
+<img src="../Bao_Cao_PDF_v2/images/eda_02_histogram_price_area.png" style="width:78%">
+<div class="cap">Hình 2. Phân phối giá thuê và diện tích sau làm sạch.</div>
+
+<h2>3. Kết quả thí nghiệm hiện thời</h2>
+<p>Ở giai đoạn này nhóm thử các phương pháp cơ bản: 3 mô hình tuyến tính (OLS; Ridge, LASSO chọn <code>alpha</code> bằng
+GridSearchCV trên Train) và Random Forest (RandomizedSearchCV) làm mốc phi tuyến. Random Forest được ràng buộc đơn điệu trên
+12 cờ tiện ích (bật tiện ích không làm giảm giá) để không học tương quan âm giả do MNAR. Mô hình được huấn luyện trên Train,
+chọn siêu tham số theo Validation, rồi đánh giá trên Test.</p>
+
+<table>
+  <tr><th rowspan="2">Mô hình</th><th rowspan="2">Siêu tham số</th><th colspan="3">Validation</th><th colspan="3">Test</th></tr>
+  <tr><th class="n">MAE</th><th class="n">RMSE</th><th class="n">R²</th><th class="n">MAE</th><th class="n">RMSE</th><th class="n">R²</th></tr>
+  <tr><td>OLS</td><td>—</td><td class="n">1,963</td><td class="n">2,586</td><td class="n">0,195</td><td class="n">1,958</td><td class="n">2,586</td><td class="n">0,190</td></tr>
+  <tr><td>Ridge</td><td>alpha = 1,0</td><td class="n">1,963</td><td class="n">2,586</td><td class="n">0,195</td><td class="n">1,958</td><td class="n">2,586</td><td class="n">0,190</td></tr>
+  <tr><td>LASSO</td><td>alpha = 0,001</td><td class="n">1,966</td><td class="n">2,590</td><td class="n">0,192</td><td class="n">1,961</td><td class="n">2,589</td><td class="n">0,188</td></tr>
+  <tr><td><b>Random Forest</b></td><td>500 cây, depth 20, min_split 10</td><td class="n"><b>1,397</b></td><td class="n"><b>2,149</b></td><td class="n"><b>0,444</b></td><td class="n"><b>1,380</b></td><td class="n"><b>2,114</b></td><td class="n"><b>0,459</b></td></tr>
+</table>
+<div class="cap">Bảng 3. Kết quả các phương pháp cơ bản (MAE, RMSE: triệu VNĐ/tháng).</div>
+
+<p><b>Kiểm chứng các bước xử lý dữ liệu</b> (OLS, RMSE trên Validation):</p>
+<table>
+  <tr><th>Cấu hình dữ liệu</th><th class="n">RMSE</th><th>Kết luận</th></tr>
+  <tr><td>Thô — không tách khu vực từ địa chỉ</td><td class="n">2,681</td><td>Mốc so sánh</td></tr>
+  <tr><td>Tách <code>city</code>/<code>district</code> + One-Hot</td><td class="n"><b>2,586</b></td><td>Giảm 3,5% → giữ lại</td></tr>
+  <tr><td>+ PCA (giữ 95% phương sai)</td><td class="n">2,622</td><td>Mất thông tin khu vực → không dùng</td></tr>
+  <tr><td>+ Biến đổi <code>log1p(price)</code></td><td class="n">2,636</td><td>RMSE tăng, dự báo thấp phân khúc giá cao → giữ giá gốc</td></tr>
+</table>
+<div class="cap">Bảng 4. Ảnh hưởng của các lựa chọn tiền xử lý.</div>
+
+<p><b>Nhận xét.</b></p>
+<ul>
+  <li>Kết quả Validation và Test rất sát nhau ở mọi mô hình → cách chia dữ liệu ổn định, chưa có dấu hiệu overfitting.</li>
+  <li>Ba mô hình tuyến tính gần như trùng nhau (R² ≈ 0,19): regularization không giúp được, vấn đề là <b>underfitting</b> —
+      giá phụ thuộc phi tuyến vào tương tác khu vực × diện tích.</li>
+  <li>Random Forest giảm RMSE ≈ 18% so với tuyến tính (2,586 → 2,114 trên Test), xác nhận cần mô hình phi tuyến;
+      tuy vậy R² = 0,46 vẫn còn thấp, cần mô hình mạnh hơn và đặc trưng tốt hơn.</li>
+  <li>Xử lý dữ liệu có tác động rõ: tách khu vực từ địa chỉ là bước tạo đặc trưng hữu ích nhất; PCA và log-target không có lợi.</li>
+</ul>
+
+<p><b>Mã nguồn:</b> <a href="https://github.com/chuotchuilacduong/Machine_Learning_20261">github.com/chuotchuilacduong/Machine_Learning_20261</a>
+— làm sạch: <code>notebooks/02_data_cleaning.ipynb</code>; khám phá dữ liệu: <code>notebooks/03_eda.ipynb</code>;
+huấn luyện: <code>notebooks/04_modeling.ipynb</code>; tiền xử lý đặc trưng dùng chung: <code>script/model/features.py</code>.</p>
+
+<h2>4. Các bước tiếp theo cho báo cáo cuối kỳ</h2>
+<ul>
+  <li><b>XGBoost / LightGBM / CatBoost:</b> gradient boosting thường mạnh nhất với dữ liệu bảng; dùng early stopping trên Validation,
+      ràng buộc đơn điệu cho tiện ích; CatBoost xử lý trực tiếp biến phân loại nhiều mức như <code>district</code>.</li>
+  <li><b>MLP (mạng nơ-ron):</b> thử MLP nhiều lớp, dùng <b>embedding</b> cho <code>district</code> thay cho One-Hot, có dropout và early stopping.</li>
+  <li><b>Phương pháp khác đề xuất:</b> KNN hồi quy và SVR làm mốc so sánh; <b>stacking</b> kết hợp các mô hình tốt nhất.</li>
+  <li><b>Cải thiện dữ liệu:</b> target encoding cho khu vực; bổ sung tọa độ / khoảng cách tới trung tâm từ địa chỉ;
+      cân bằng thêm dữ liệu ngoài Hà Nội.</li>
+  <li><b>Đánh giá đầy đủ:</b> 10-fold Cross-Validation (trung bình ± độ lệch chuẩn) cho mọi mô hình, phân tích phần dư theo
+      phân khúc giá, feature importance, learning curve (bias hay variance).</li>
+  <li><b>Sản phẩm:</b> ứng dụng web demo (Streamlit) cho mô hình tốt nhất và hoàn thiện báo cáo cuối kỳ.</li>
+</ul>
+
+</body>
+</html>
